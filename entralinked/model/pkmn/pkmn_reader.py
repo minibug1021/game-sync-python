@@ -356,6 +356,9 @@ class Pokemon(DataReader):
 
             personal_key = f'({self.natdex}, {self.form})'
             self.species, self.type1, self.type2, self.growth_group = extra_data.personal_data[personal_key]
+
+            self.nickname = self.nickname if self.nickname != self.species else None
+            
             self.level = _get_level(self.growth_group, self.exp)
 
     @property

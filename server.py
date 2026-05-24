@@ -165,5 +165,5 @@ class GameSync:
         sys.exit(0)
 
 if __name__ == "__main__":
-    app = GameSync(sys.argv[1:])
+    app = GameSync()
     app.run_forever()
