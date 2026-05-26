@@ -43,7 +43,7 @@ class Player:
         self.custom_cgear_skin = None
         self.custom_dex_skin = None
         self.custom_musical = None
-        
+
         self.data_directory = None
 
     @classmethod
@@ -98,7 +98,7 @@ class Player:
             "last_started_at": int(now_japan.timestamp()),
             "last_logined_at": int(now_japan.timestamp()),
             #"pdw_copied_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-            #"pgl_copied_at": now.strftime("%Y-%m-%d %H:%M:%S"),
+            "pgl_copied_at": now_local.strftime("%Y-%m-%d %H:%M:%S"),
             "langcode": self.language_code,
             "player_name": self.name,
             "play_status": self.status.value,
@@ -110,7 +110,7 @@ class Player:
             "type1": self.dreamer_info.type1 if self.dreamer_info else None,
             "type2": self.dreamer_info.type2 if self.dreamer_info else None,
             "gscd": self.game_sync_id,
-            "last_started_at_timezone": int(now_local.timestamp()),
+            #"last_started_at_timezone": int(now_local.timestamp()),
         }
 
         game_sync = {
@@ -151,7 +151,7 @@ class Player:
 
     def get_encounters(self):
         return self.encounters.copy()
-    
+
     def set_items(self, items: List[DreamItem]):
         if len(items) <= 20:
             self.items.clear()
@@ -159,7 +159,7 @@ class Player:
 
     def get_items(self):
         return self.items.copy()
-    
+
     def set_avenue_visitors(self, avenue_visitors: List[AvenueVisitor]):
         if len(avenue_visitors) <= 12:
             self.avenue_visitors.clear()
@@ -167,7 +167,7 @@ class Player:
 
     def get_avenue_visitors(self):
         return self.avenue_visitors.copy()
-    
+
     def set_decor(self, decor: List[DreamDecor]):
         if len(decor) <= 5:
             self.decor.clear()

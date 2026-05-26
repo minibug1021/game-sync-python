@@ -38,5 +38,5 @@ class DreamEncounter:
 
 @dataclass
 class DreamItem:
-    id: int
-    quantity: int
+    pokeitem_id: int
+    item_cnt: int
