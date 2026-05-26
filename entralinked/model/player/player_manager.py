@@ -21,7 +21,7 @@ class PlayerManager:
 
         if not (self.data_directory / "game_sync.json").exists():
             return
-        
+
         self.load_player(self.data_directory)
 
     def load_player(self, input_folder: Path):
@@ -41,17 +41,17 @@ class PlayerManager:
         if not GsidUtility.is_valid_gamesync_id(game_sync_id):
             logger.error(f"Invalid Game Sync ID: {game_sync_id}")
             return
-        
+
         if self.does_player_exist(game_sync_id):
             logger.error(f"Duplicate Game Sync ID: {game_sync_id}")
             return
-        
+
         self.player_map[game_sync_id] = player
 
     def save_players(self):
         for player in self.player_map.values():
             self.save_player(player)
-        
+
     def save_player(self, player: Player, output_folder: Path = None):
         if output_folder is None:
             output_folder = player.data_directory
@@ -86,18 +86,18 @@ class PlayerManager:
         except Exception as e:
             logger.error(f"Could not save player data for {player.game_sync_id}: {e}")
             return False
-        
+
         return True
 
     def register_player(self, game_sync_id: str, rom_code: int, lang_code: int):
         if game_sync_id in self.player_map:
             logger.warning(f"Attempted to register duplicate Game Sync ID: {game_sync_id}")
             return None
-        
+
         if not GsidUtility.is_valid_gamesync_id(game_sync_id):
             logger.error(f"Attempted to register invalid Game Sync ID: {game_sync_id}")
             return None
-        
+
         player_data_file = ROOT_DIR / "save_data" / "game_sync.json"
 
         if player_data_file.exists():
@@ -117,13 +117,11 @@ class PlayerManager:
         self.player_map[game_sync_id] = player
         return player
 
-    def store_player_game_save_file(self, player: Player, save_file: bytearray):
+    def store_player_game_save_file(self, player: Player, save_data: bytearray):
         try:
-            destination_path = player.data_directory / "save.bin"
-            
-            destination_path.write_bytes(save_file)
+            player.raw_save_data = save_data
             return True
-        
+
         except Exception as e:
             logger.error(f"Could not write game save data for player {player.game_sync_id}: {e}")
             return False

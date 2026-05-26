@@ -220,12 +220,14 @@ def _sanitize_str(string: str):
 def _replace_special_chars(string: str):
     return "".join(extra_data.special_chars[ch] if ch in extra_data.special_chars else ch for ch in list(string))
 
-def _get_level(group_name, total_exp):
-    name = group_name.lower().replace(" ", "")
+def _get_level(group_id: int, total_exp: int):
 
     def get_exp_for_level(n):
 
-        if name == "erratic":
+        if group_id == 0:
+            return n**3
+
+        if group_id == 1:
             if n < 50:
                 return (n**3 * (100 - n)) // 50
             if n < 68:
@@ -234,25 +236,23 @@ def _get_level(group_name, total_exp):
                 return (n**3 * math.floor((1911 - 10 * n) / 3)) // 500
             return (n**3 * (160 - n)) // 100
 
-        if name == "fast":
-            return (4 * n**3) // 5
-
-        if name == "mediumfast":
-            return n**3
-
-        if name == "mediumslow":
-            val = 1.2 * (n**3) - 15 * (n**2) + 100 * n - 140
-            return math.floor(max(0, val))
-
-        if name == "slow":
-            return (5 * n**3) // 4
-
-        if name == "fluctuating":
+        if group_id == 2:
             if n < 15:
                 return (n**3 * (math.floor((n + 1) / 3) + 24)) // 50
             if n < 36:
                 return (n**3 * (n + 14)) // 50
             return (n**3 * (math.floor(n / 2) + 32)) // 50
+
+        if group_id == 3:
+            val = 1.2 * (n**3) - 15 * (n**2) + 100 * n - 140
+            return math.floor(max(0, val))
+
+        if group_id == 4:
+            return (4 * n**3) // 5
+
+        if group_id == 5:
+            return (5 * n**3) // 4
+
 
     for level in range(100, 0, -1):
         required_exp = get_exp_for_level(level)
@@ -352,13 +352,12 @@ class Pokemon(DataReader):
             self.trainer_gender: str = "Female" if self.read_bit(0x84, 7) else "Male"
             self.trainer_id    : int = self.read_int(0x0C, 2)
             self.trainer_id_secret : int = self.read_int(0x0E, 2)
-            self.ball          : str = extra_data.balls[self.read_int(0x83, 1)]
+            self.ball          : int = self.read_int(0x83, 1)
 
-            personal_key = f'({self.natdex}, {self.form})'
-            self.species, self.type1, self.type2, self.growth_group = extra_data.personal_data[personal_key]
+            self.type1, self.type2, self.growth_group = extra_data.personal_data[self.natdex][self.form]
 
-            self.nickname = self.nickname if self.nickname != self.species else None
-            
+            self.nickname = self.nickname
+
             self.level = _get_level(self.growth_group, self.exp)
 
     @property
@@ -372,10 +371,9 @@ class Pokemon(DataReader):
 
 class SaveFile:
 
-    def __init__(self, path: Path):
-        with open(path, "rb") as f:
-            self._data: bytearray = bytearray(f.read())
-        self._path = path
+    def __init__(self, save_data):
+        self._data: bytearray = save_data.getbuffer().tobytes()
+
         self.game_version = "BW" if self._data[0x1941F] in (20, 21) else "B2W2"
 
     def trainer(self) -> Trainer:

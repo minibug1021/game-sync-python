@@ -74,8 +74,6 @@ class Player:
         except KeyError:
             player.status = PlayerStatus.AWAKE
 
-        print(player.status)
-
         player.encounters = [DreamEncounter(**e) for e in game_sync.get("encounters", [])]
         player.items = [DreamItem(**i) for i in game_sync.get("items", [])]
         player.avenue_visitors = [AvenueVisitor(**v) for v in game_sync.get("avenue_visitors", [])]
@@ -95,8 +93,8 @@ class Player:
             "pokemon_no": self.dreamer_info.pokemon_no if self.dreamer_info else None,
             "form_no": self.dreamer_info.form_no if self.dreamer_info else None,
             "player_badge_num": self.num_badges,
-            "last_started_at": int(now_japan.timestamp()),
-            "last_logined_at": int(now_japan.timestamp()),
+            #"last_started_at": int(now_japan.timestamp()),
+            #"last_logined_at": int(now_japan.timestamp()),
             #"pdw_copied_at": now.strftime("%Y-%m-%d %H:%M:%S"),
             "pgl_copied_at": now_local.strftime("%Y-%m-%d %H:%M:%S"),
             "langcode": self.language_code,
@@ -106,7 +104,7 @@ class Player:
             #"last_up_time_strict": now_japan.strftime("%Y-%m-%d %H:%M:%S"),
             "rom_name": extra_data.version[(self.rom_code, self.language_code)],
             "alter_rom_name": "Shiro*" if self.rom_code in (20, 22) else "Kuro*",
-            "pokemon_name": self.dreamer_info.pokemon_name if self.dreamer_info else None,
+            "pokemon_name": self.dreamer_info.pokemon_no if self.dreamer_info else None,
             "type1": self.dreamer_info.type1 if self.dreamer_info else None,
             "type2": self.dreamer_info.type2 if self.dreamer_info else None,
             "gscd": self.game_sync_id,

@@ -10,7 +10,7 @@ from flask import request, Blueprint, g
 
 from model.user.user import User
 from model.dlc.dlc import DlcList, Dlc
-from model.pkmn.pkmn_info import PkmnInfo, PkmnNature
+from model.pkmn.pkmn_info import PkmnInfo
 from model.pkmn.pkmn_reader import Pokemon, SaveFile
 from model.user.user_manager import UserManager
 from model.player.player import PlayerStatus, Player
@@ -53,15 +53,15 @@ class PglHandler:
 
     def add_handlers(self) -> Blueprint:
         blueprint = Blueprint('pgl', __name__)
-        
+
         @blueprint.before_request
         def before_request_hook():
             return self.authorize_pgl_request()
-        
+
         @blueprint.get('/dsio/gw')
         def pgl_get():
             return self.handle_pgl_get_request()
-        
+
         @blueprint.post('/dsio/gw')
         def pgl_post():
             return self.handle_pgl_post_request()
@@ -74,7 +74,7 @@ class PglHandler:
         if (credentials is None) or (credentials.username != PglHandler.username) or (credentials.password != PglHandler.password):
             logger.debug("Rejecting PGL request because the auth credentials were incorrect")
             return HTTPStatus.UNAUTHORIZED
-        
+
         req = PglRequest(
             p = request.args["p"],
             tok = request.args["tok"],
@@ -90,7 +90,7 @@ class PglHandler:
         if session is None:
             logger.debug("Rejecting PGL request because the service session has expired")
             return HTTPStatus.UNAUTHORIZED
-        
+
         g.pgl_request = req
         g.pgl_user = session.user
 
@@ -114,13 +114,13 @@ class PglHandler:
 
         handler(req, output)
         return buffer.getvalue(), 200, {"Content-Type": "application/octet-stream"}
-        
+
     def handle_get_sleepy_list(self, req: PglRequest, output: LEOutputStream):
-        
+
         if not self.player_manager.does_player_exist(req.gsid):
             self.write_status_code(output, 1)
             return
-        
+
         bit_list = bytearray(128)
 
         for sleepy in self.sleepy_list:
@@ -138,7 +138,7 @@ class PglHandler:
         if player is None:
             self.write_status_code(output, 8)
             return
-        
+
         self.write_status_code(output, 0)
         output.write_short(player.status.value)
 
@@ -149,14 +149,14 @@ class PglHandler:
         if player is None:
             self.write_status_code(output, 1)
             return
-        
+
         logger.info(f"Player {player.gsid} is downloading save data")
 
         self.write_status_code(output, 0)
 
         if player.status == PlayerStatus.AWAKE:
             return
-        
+
         is_version_2 = True if player.rom_code in (22, 23) else False
         encounters = player.encounters
         items = player.items
@@ -217,7 +217,7 @@ class PglHandler:
                 visitor_type = visitor.type.client_id + visitor.personality * 8
                 output.write(visitor_type)
                 output.write(visitor.shop_type.value + (7 - visitor_type * 2 % 7))
-                
+
                 output.write_short(0)
                 output.write_int(1)
                 output.write(visitor.country_code)
@@ -235,33 +235,31 @@ class PglHandler:
         if not GsidUtility.is_valid_gamesync_id(req.gsid):
             self.write_status_code(output, 8)
             return
-        
+
         player: Player = self.player_manager.player_map.get(req.gsid)
         user = g.pgl_user
 
         if player is None:
             self.write_status_code(output, 8)
             return
-        
+
         if player.rom_code == 0:
             self.write_status_code(output, 5)
             return
-        
+
         if player.rom_code in (22, 23):
             self.write_status_code(output, 10)
             return
-        
-        file: Path = player.data_directory / "save.bin"
 
-        if not file.exists():
+        if getattr(player, "raw_save_data", None) is None:
             self.write_status_code(output, 5)
             return
-        
+
         logger.info(f"User {user.get_redacted_id()} is Memory Linking with player {player.id}")
 
         self.write_status_code(output, 0)
 
-        output.write(file.read_bytes())
+        #output.write(player.raw_save_data)
 
     def handle_pgl_post_request(self):
         req = g.pgl_request
@@ -290,14 +288,14 @@ class PglHandler:
         if player is None:
             self.write_status_code(output, 1)
             return
-        
+
         if self.configuration.clear_player_dream_info_on_wake:
             player.reset_dream_info()
 
             if not self.player_manager.save_player(player):
                 logger.warning(f"Save data failure for player {player.game_sync_id}")
                 return HTTPStatus.INTERNAL_SERVER_ERROR
-            
+
         self.write_status_code(output, 0)
 
     def handle_upload_save_data(self, req: PglRequest, output: LEOutputStream):
@@ -321,15 +319,15 @@ class PglHandler:
             self.write_status_code(output, 4)
             return
 
-        save_path: Path = (player.data_directory / "save.bin")
+        save_stream = io.BytesIO(save_data_bytes)
 
-        save = SaveFile(save_path)
+        save = SaveFile(save_stream)
 
         pkmn_data = save.get_dreamer_pokemon()
+        print(pkmn_data)
 
         dreamer_info = PkmnInfo(
             pokemon_no        = pkmn_data.natdex,
-            pokemon_name      = pkmn_data.species,
             form_no           = pkmn_data.form,
             type1             = pkmn_data.type1,
             type2             = pkmn_data.type2,
@@ -337,7 +335,7 @@ class PglHandler:
             oyaname           = pkmn_data.trainer_name,
             level             = pkmn_data.level,
             sex               = pkmn_data.gender,
-            personality       = PkmnNature(pkmn_data.nature).name,
+            personality       = pkmn_data.nature,
             ball_name         = pkmn_data.ball,
             trainer_id        = pkmn_data.trainer_id,
             trainer_secret_id = pkmn_data.trainer_id_secret
@@ -355,7 +353,7 @@ class PglHandler:
         if not self.player_manager.save_player(player):
             logger.warning(f"Save data failure for player {player.game_sync_id}")
             return HTTPStatus.INTERNAL_SERVER_ERROR
-        
+
         self.write_status_code(output, 0)
 
     def handle_create_account(self, req: PglRequest, output: LEOutputStream):
@@ -364,21 +362,21 @@ class PglHandler:
         if not GsidUtility.is_valid_gamesync_id(req.gsid):
             self.write_status_code(output, 8)
             return
-        
+
         if self.player_manager.does_player_exist(req.gsid):
             self.write_status_code(output, 2)
             return
-        
+
         player = self.player_manager.register_player(req.gsid, req.rom, req.langcode)
 
         if player is None:
             self.write_status_code(output, 3)
             return
-        
+
         if not self.player_manager.store_player_game_save_file(player, bytes):
             self.write_status_code(output, 4)
             return
-        
+
         self.write_status_code(output, 0)
 
     def handle_create_data(self, req: PglRequest, output: LEOutputStream):
@@ -389,7 +387,7 @@ class PglHandler:
             logger.debug(f"[account.createdata] Rejecting invalid Game Sync ID: {game_sync_id} ({raw_body})")
             self.write_status_code(output, 8)
             return
-        
+
         if self.player_manager.does_player_exist(game_sync_id):
             self.write_status_code(output, 2)
             return
@@ -397,7 +395,7 @@ class PglHandler:
         if self.player_manager.register_player(game_sync_id, None) is None:
             self.write_status_code(output, 3)
             return
-        
+
         self.write_status_code(output, 0)
 
     def write_status_code(self, output: LEOutputStream, status: int):

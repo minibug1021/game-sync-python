@@ -32,36 +32,6 @@ version = {
     (23, 8): "포켓몬스터 블랙2"
 }
 
-balls = (
-    "None",
-    "Master Ball",
-    "Ultra Ball",
-    "Great Ball",
-    "Poké Ball",
-    "Safari Ball",
-    "Net Ball",
-    "Dive Ball",
-    "Nest Ball",
-    "Repeat Ball",
-    "Timer Ball",
-    "Luxury Ball",
-    "Premier Ball",
-    "Dusk Ball",
-    "Heal Ball",
-    "Quick Ball",
-    "Cherish Ball",
-    "Fast Ball",
-    "Level Ball",
-    "Lure Ball",
-    "Heavy Ball",
-    "Love Ball",
-    "Friend Ball",
-    "Moon Ball",
-    "Sport Ball",
-    "Dream Ball",
-    "Park Ball"
-)
-
 country = (
     None,
     "Afghanistan",
@@ -920,4396 +890,779 @@ special_chars = {
 }
 
 personal_data = {
-  "(0, 0)": [
-    None,
-    None,
-    None,
-    None
-  ],
-  "(1, 0)": [
-    "Bulbasaur",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(2, 0)": [
-    "Ivysaur",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(3, 0)": [
-    "Venusaur",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(4, 0)": [
-    "Charmander",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(5, 0)": [
-    "Charmeleon",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(6, 0)": [
-    "Charizard",
-    "Fire",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(7, 0)": [
-    "Squirtle",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(8, 0)": [
-    "Wartortle",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(9, 0)": [
-    "Blastoise",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(10, 0)": [
-    "Caterpie",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(11, 0)": [
-    "Metapod",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(12, 0)": [
-    "Butterfree",
-    "Bug",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(13, 0)": [
-    "Weedle",
-    "Bug",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(14, 0)": [
-    "Kakuna",
-    "Bug",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(15, 0)": [
-    "Beedrill",
-    "Bug",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(16, 0)": [
-    "Pidgey",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(17, 0)": [
-    "Pidgeotto",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(18, 0)": [
-    "Pidgeot",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(19, 0)": [
-    "Rattata",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(20, 0)": [
-    "Raticate",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(21, 0)": [
-    "Spearow",
-    "Normal",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(22, 0)": [
-    "Fearow",
-    "Normal",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(23, 0)": [
-    "Ekans",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(24, 0)": [
-    "Arbok",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(25, 0)": [
-    "Pikachu",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(26, 0)": [
-    "Raichu",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(27, 0)": [
-    "Sandshrew",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(28, 0)": [
-    "Sandslash",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(29, 0)": [
-    "Nidoran♀",
-    "Poison",
-    None,
-    "Medium Slow"
-  ],
-  "(30, 0)": [
-    "Nidorina",
-    "Poison",
-    None,
-    "Medium Slow"
-  ],
-  "(31, 0)": [
-    "Nidoqueen",
-    "Poison",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(32, 0)": [
-    "Nidoran♂",
-    "Poison",
-    None,
-    "Medium Slow"
-  ],
-  "(33, 0)": [
-    "Nidorino",
-    "Poison",
-    None,
-    "Medium Slow"
-  ],
-  "(34, 0)": [
-    "Nidoking",
-    "Poison",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(35, 0)": [
-    "Clefairy",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(36, 0)": [
-    "Clefable",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(37, 0)": [
-    "Vulpix",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(38, 0)": [
-    "Ninetales",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(39, 0)": [
-    "Jigglypuff",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(40, 0)": [
-    "Wigglytuff",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(41, 0)": [
-    "Zubat",
-    "Poison",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(42, 0)": [
-    "Golbat",
-    "Poison",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(43, 0)": [
-    "Oddish",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(44, 0)": [
-    "Gloom",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(45, 0)": [
-    "Vileplume",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(46, 0)": [
-    "Paras",
-    "Bug",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(47, 0)": [
-    "Parasect",
-    "Bug",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(48, 0)": [
-    "Venonat",
-    "Bug",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(49, 0)": [
-    "Venomoth",
-    "Bug",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(50, 0)": [
-    "Diglett",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(51, 0)": [
-    "Dugtrio",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(52, 0)": [
-    "Meowth",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(53, 0)": [
-    "Persian",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(54, 0)": [
-    "Psyduck",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(55, 0)": [
-    "Golduck",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(56, 0)": [
-    "Mankey",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(57, 0)": [
-    "Primeape",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(58, 0)": [
-    "Growlithe",
-    "Fire",
-    None,
-    "Slow"
-  ],
-  "(59, 0)": [
-    "Arcanine",
-    "Fire",
-    None,
-    "Slow"
-  ],
-  "(60, 0)": [
-    "Poliwag",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(61, 0)": [
-    "Poliwhirl",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(62, 0)": [
-    "Poliwrath",
-    "Water",
-    "Fighting",
-    "Medium Slow"
-  ],
-  "(63, 0)": [
-    "Abra",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(64, 0)": [
-    "Kadabra",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(65, 0)": [
-    "Alakazam",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(66, 0)": [
-    "Machop",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(67, 0)": [
-    "Machoke",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(68, 0)": [
-    "Machamp",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(69, 0)": [
-    "Bellsprout",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(70, 0)": [
-    "Weepinbell",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(71, 0)": [
-    "Victreebel",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(72, 0)": [
-    "Tentacool",
-    "Water",
-    "Poison",
-    "Slow"
-  ],
-  "(73, 0)": [
-    "Tentacruel",
-    "Water",
-    "Poison",
-    "Slow"
-  ],
-  "(74, 0)": [
-    "Geodude",
-    "Rock",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(75, 0)": [
-    "Graveler",
-    "Rock",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(76, 0)": [
-    "Golem",
-    "Rock",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(77, 0)": [
-    "Ponyta",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(78, 0)": [
-    "Rapidash",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(79, 0)": [
-    "Slowpoke",
-    "Water",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(80, 0)": [
-    "Slowbro",
-    "Water",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(81, 0)": [
-    "Magnemite",
-    "Electric",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(82, 0)": [
-    "Magneton",
-    "Electric",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(83, 0)": [
-    "Farfetch'd",
-    "Normal",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(84, 0)": [
-    "Doduo",
-    "Normal",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(85, 0)": [
-    "Dodrio",
-    "Normal",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(86, 0)": [
-    "Seel",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(87, 0)": [
-    "Dewgong",
-    "Water",
-    "Ice",
-    "Medium Fast"
-  ],
-  "(88, 0)": [
-    "Grimer",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(89, 0)": [
-    "Muk",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(90, 0)": [
-    "Shellder",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(91, 0)": [
-    "Cloyster",
-    "Water",
-    "Ice",
-    "Slow"
-  ],
-  "(92, 0)": [
-    "Gastly",
-    "Ghost",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(93, 0)": [
-    "Haunter",
-    "Ghost",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(94, 0)": [
-    "Gengar",
-    "Ghost",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(95, 0)": [
-    "Onix",
-    "Rock",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(96, 0)": [
-    "Drowzee",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(97, 0)": [
-    "Hypno",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(98, 0)": [
-    "Krabby",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(99, 0)": [
-    "Kingler",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(100, 0)": [
-    "Voltorb",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(101, 0)": [
-    "Electrode",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(102, 0)": [
-    "Exeggcute",
-    "Grass",
-    "Psychic",
-    "Slow"
-  ],
-  "(103, 0)": [
-    "Exeggutor",
-    "Grass",
-    "Psychic",
-    "Slow"
-  ],
-  "(104, 0)": [
-    "Cubone",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(105, 0)": [
-    "Marowak",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(106, 0)": [
-    "Hitmonlee",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(107, 0)": [
-    "Hitmonchan",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(108, 0)": [
-    "Lickitung",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(109, 0)": [
-    "Koffing",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(110, 0)": [
-    "Weezing",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(111, 0)": [
-    "Rhyhorn",
-    "Ground",
-    "Rock",
-    "Slow"
-  ],
-  "(112, 0)": [
-    "Rhydon",
-    "Ground",
-    "Rock",
-    "Slow"
-  ],
-  "(113, 0)": [
-    "Chansey",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(114, 0)": [
-    "Tangela",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(115, 0)": [
-    "Kangaskhan",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(116, 0)": [
-    "Horsea",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(117, 0)": [
-    "Seadra",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(118, 0)": [
-    "Goldeen",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(119, 0)": [
-    "Seaking",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(120, 0)": [
-    "Staryu",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(121, 0)": [
-    "Starmie",
-    "Water",
-    "Psychic",
-    "Slow"
-  ],
-  "(122, 0)": [
-    "Mr. Mime",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(123, 0)": [
-    "Scyther",
-    "Bug",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(124, 0)": [
-    "Jynx",
-    "Ice",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(125, 0)": [
-    "Electabuzz",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(126, 0)": [
-    "Magmar",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(127, 0)": [
-    "Pinsir",
-    "Bug",
-    None,
-    "Slow"
-  ],
-  "(128, 0)": [
-    "Tauros",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(129, 0)": [
-    "Magikarp",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(130, 0)": [
-    "Gyarados",
-    "Water",
-    "Flying",
-    "Slow"
-  ],
-  "(131, 0)": [
-    "Lapras",
-    "Water",
-    "Ice",
-    "Slow"
-  ],
-  "(132, 0)": [
-    "Ditto",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(133, 0)": [
-    "Eevee",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(134, 0)": [
-    "Vaporeon",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(135, 0)": [
-    "Jolteon",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(136, 0)": [
-    "Flareon",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(137, 0)": [
-    "Porygon",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(138, 0)": [
-    "Omanyte",
-    "Rock",
-    "Water",
-    "Medium Fast"
-  ],
-  "(139, 0)": [
-    "Omastar",
-    "Rock",
-    "Water",
-    "Medium Fast"
-  ],
-  "(140, 0)": [
-    "Kabuto",
-    "Rock",
-    "Water",
-    "Medium Fast"
-  ],
-  "(141, 0)": [
-    "Kabutops",
-    "Rock",
-    "Water",
-    "Medium Fast"
-  ],
-  "(142, 0)": [
-    "Aerodactyl",
-    "Rock",
-    "Flying",
-    "Slow"
-  ],
-  "(143, 0)": [
-    "Snorlax",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(144, 0)": [
-    "Articuno",
-    "Ice",
-    "Flying",
-    "Slow"
-  ],
-  "(145, 0)": [
-    "Zapdos",
-    "Electric",
-    "Flying",
-    "Slow"
-  ],
-  "(146, 0)": [
-    "Moltres",
-    "Fire",
-    "Flying",
-    "Slow"
-  ],
-  "(147, 0)": [
-    "Dratini",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(148, 0)": [
-    "Dragonair",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(149, 0)": [
-    "Dragonite",
-    "Dragon",
-    "Flying",
-    "Slow"
-  ],
-  "(150, 0)": [
-    "Mewtwo",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(151, 0)": [
-    "Mew",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(152, 0)": [
-    "Chikorita",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(153, 0)": [
-    "Bayleef",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(154, 0)": [
-    "Meganium",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(155, 0)": [
-    "Cyndaquil",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(156, 0)": [
-    "Quilava",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(157, 0)": [
-    "Typhlosion",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(158, 0)": [
-    "Totodile",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(159, 0)": [
-    "Croconaw",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(160, 0)": [
-    "Feraligatr",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(161, 0)": [
-    "Sentret",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(162, 0)": [
-    "Furret",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(163, 0)": [
-    "Hoothoot",
-    "Normal",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(164, 0)": [
-    "Noctowl",
-    "Normal",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(165, 0)": [
-    "Ledyba",
-    "Bug",
-    "Flying",
-    "Fast"
-  ],
-  "(166, 0)": [
-    "Ledian",
-    "Bug",
-    "Flying",
-    "Fast"
-  ],
-  "(167, 0)": [
-    "Spinarak",
-    "Bug",
-    "Poison",
-    "Fast"
-  ],
-  "(168, 0)": [
-    "Ariados",
-    "Bug",
-    "Poison",
-    "Fast"
-  ],
-  "(169, 0)": [
-    "Crobat",
-    "Poison",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(170, 0)": [
-    "Chinchou",
-    "Water",
-    "Electric",
-    "Slow"
-  ],
-  "(171, 0)": [
-    "Lanturn",
-    "Water",
-    "Electric",
-    "Slow"
-  ],
-  "(172, 0)": [
-    "Pichu",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(173, 0)": [
-    "Cleffa",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(174, 0)": [
-    "Igglybuff",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(175, 0)": [
-    "Togepi",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(176, 0)": [
-    "Togetic",
-    "Normal",
-    "Flying",
-    "Fast"
-  ],
-  "(177, 0)": [
-    "Natu",
-    "Psychic",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(178, 0)": [
-    "Xatu",
-    "Psychic",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(179, 0)": [
-    "Mareep",
-    "Electric",
-    None,
-    "Medium Slow"
-  ],
-  "(180, 0)": [
-    "Flaaffy",
-    "Electric",
-    None,
-    "Medium Slow"
-  ],
-  "(181, 0)": [
-    "Ampharos",
-    "Electric",
-    None,
-    "Medium Slow"
-  ],
-  "(182, 0)": [
-    "Bellossom",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(183, 0)": [
-    "Marill",
-    "Water",
-    None,
-    "Fast"
-  ],
-  "(184, 0)": [
-    "Azumarill",
-    "Water",
-    None,
-    "Fast"
-  ],
-  "(185, 0)": [
-    "Sudowoodo",
-    "Rock",
-    None,
-    "Medium Fast"
-  ],
-  "(186, 0)": [
-    "Politoed",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(187, 0)": [
-    "Hoppip",
-    "Grass",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(188, 0)": [
-    "Skiploom",
-    "Grass",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(189, 0)": [
-    "Jumpluff",
-    "Grass",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(190, 0)": [
-    "Aipom",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(191, 0)": [
-    "Sunkern",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(192, 0)": [
-    "Sunflora",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(193, 0)": [
-    "Yanma",
-    "Bug",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(194, 0)": [
-    "Wooper",
-    "Water",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(195, 0)": [
-    "Quagsire",
-    "Water",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(196, 0)": [
-    "Espeon",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(197, 0)": [
-    "Umbreon",
-    "Dark",
-    None,
-    "Medium Fast"
-  ],
-  "(198, 0)": [
-    "Murkrow",
-    "Dark",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(199, 0)": [
-    "Slowking",
-    "Water",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(200, 0)": [
-    "Misdreavus",
-    "Ghost",
-    None,
-    "Fast"
-  ],
-  "(201, 0)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 1)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 2)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 3)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 4)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 5)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 6)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 7)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 8)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 9)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 10)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 11)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 12)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 13)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 14)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 15)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 16)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 17)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 18)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 19)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 20)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 21)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 22)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 23)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 24)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 25)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 26)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(201, 27)": [
-    "Unown",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(202, 0)": [
-    "Wobbuffet",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(203, 0)": [
-    "Girafarig",
-    "Normal",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(204, 0)": [
-    "Pineco",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(205, 0)": [
-    "Forretress",
-    "Bug",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(206, 0)": [
-    "Dunsparce",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(207, 0)": [
-    "Gligar",
-    "Ground",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(208, 0)": [
-    "Steelix",
-    "Steel",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(209, 0)": [
-    "Snubbull",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(210, 0)": [
-    "Granbull",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(211, 0)": [
-    "Qwilfish",
-    "Water",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(212, 0)": [
-    "Scizor",
-    "Bug",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(213, 0)": [
-    "Shuckle",
-    "Bug",
-    "Rock",
-    "Medium Slow"
-  ],
-  "(214, 0)": [
-    "Heracross",
-    "Bug",
-    "Fighting",
-    "Slow"
-  ],
-  "(215, 0)": [
-    "Sneasel",
-    "Dark",
-    "Ice",
-    "Medium Slow"
-  ],
-  "(216, 0)": [
-    "Teddiursa",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(217, 0)": [
-    "Ursaring",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(218, 0)": [
-    "Slugma",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(219, 0)": [
-    "Magcargo",
-    "Fire",
-    "Rock",
-    "Medium Fast"
-  ],
-  "(220, 0)": [
-    "Swinub",
-    "Ice",
-    "Ground",
-    "Slow"
-  ],
-  "(221, 0)": [
-    "Piloswine",
-    "Ice",
-    "Ground",
-    "Slow"
-  ],
-  "(222, 0)": [
-    "Corsola",
-    "Water",
-    "Rock",
-    "Fast"
-  ],
-  "(223, 0)": [
-    "Remoraid",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(224, 0)": [
-    "Octillery",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(225, 0)": [
-    "Delibird",
-    "Ice",
-    "Flying",
-    "Fast"
-  ],
-  "(226, 0)": [
-    "Mantine",
-    "Water",
-    "Flying",
-    "Slow"
-  ],
-  "(227, 0)": [
-    "Skarmory",
-    "Steel",
-    "Flying",
-    "Slow"
-  ],
-  "(228, 0)": [
-    "Houndour",
-    "Dark",
-    "Fire",
-    "Slow"
-  ],
-  "(229, 0)": [
-    "Houndoom",
-    "Dark",
-    "Fire",
-    "Slow"
-  ],
-  "(230, 0)": [
-    "Kingdra",
-    "Water",
-    "Dragon",
-    "Medium Fast"
-  ],
-  "(231, 0)": [
-    "Phanpy",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(232, 0)": [
-    "Donphan",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(233, 0)": [
-    "Porygon2",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(234, 0)": [
-    "Stantler",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(235, 0)": [
-    "Smeargle",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(236, 0)": [
-    "Tyrogue",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(237, 0)": [
-    "Hitmontop",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(238, 0)": [
-    "Smoochum",
-    "Ice",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(239, 0)": [
-    "Elekid",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(240, 0)": [
-    "Magby",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(241, 0)": [
-    "Miltank",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(242, 0)": [
-    "Blissey",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(243, 0)": [
-    "Raikou",
-    "Electric",
-    None,
-    "Slow"
-  ],
-  "(244, 0)": [
-    "Entei",
-    "Fire",
-    None,
-    "Slow"
-  ],
-  "(245, 0)": [
-    "Suicune",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(246, 0)": [
-    "Larvitar",
-    "Rock",
-    "Ground",
-    "Slow"
-  ],
-  "(247, 0)": [
-    "Pupitar",
-    "Rock",
-    "Ground",
-    "Slow"
-  ],
-  "(248, 0)": [
-    "Tyranitar",
-    "Rock",
-    "Dark",
-    "Slow"
-  ],
-  "(249, 0)": [
-    "Lugia",
-    "Psychic",
-    "Flying",
-    "Slow"
-  ],
-  "(250, 0)": [
-    "Ho-Oh",
-    "Fire",
-    "Flying",
-    "Slow"
-  ],
-  "(251, 0)": [
-    "Celebi",
-    "Psychic",
-    "Grass",
-    "Medium Slow"
-  ],
-  "(252, 0)": [
-    "Treecko",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(253, 0)": [
-    "Grovyle",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(254, 0)": [
-    "Sceptile",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(255, 0)": [
-    "Torchic",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(256, 0)": [
-    "Combusken",
-    "Fire",
-    "Fighting",
-    "Medium Slow"
-  ],
-  "(257, 0)": [
-    "Blaziken",
-    "Fire",
-    "Fighting",
-    "Medium Slow"
-  ],
-  "(258, 0)": [
-    "Mudkip",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(259, 0)": [
-    "Marshtomp",
-    "Water",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(260, 0)": [
-    "Swampert",
-    "Water",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(261, 0)": [
-    "Poochyena",
-    "Dark",
-    None,
-    "Medium Fast"
-  ],
-  "(262, 0)": [
-    "Mightyena",
-    "Dark",
-    None,
-    "Medium Fast"
-  ],
-  "(263, 0)": [
-    "Zigzagoon",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(264, 0)": [
-    "Linoone",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(265, 0)": [
-    "Wurmple",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(266, 0)": [
-    "Silcoon",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(267, 0)": [
-    "Beautifly",
-    "Bug",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(268, 0)": [
-    "Cascoon",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(269, 0)": [
-    "Dustox",
-    "Bug",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(270, 0)": [
-    "Lotad",
-    "Water",
-    "Grass",
-    "Medium Slow"
-  ],
-  "(271, 0)": [
-    "Lombre",
-    "Water",
-    "Grass",
-    "Medium Slow"
-  ],
-  "(272, 0)": [
-    "Ludicolo",
-    "Water",
-    "Grass",
-    "Medium Slow"
-  ],
-  "(273, 0)": [
-    "Seedot",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(274, 0)": [
-    "Nuzleaf",
-    "Grass",
-    "Dark",
-    "Medium Slow"
-  ],
-  "(275, 0)": [
-    "Shiftry",
-    "Grass",
-    "Dark",
-    "Medium Slow"
-  ],
-  "(276, 0)": [
-    "Taillow",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(277, 0)": [
-    "Swellow",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(278, 0)": [
-    "Wingull",
-    "Water",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(279, 0)": [
-    "Pelipper",
-    "Water",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(280, 0)": [
-    "Ralts",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(281, 0)": [
-    "Kirlia",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(282, 0)": [
-    "Gardevoir",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(283, 0)": [
-    "Surskit",
-    "Bug",
-    "Water",
-    "Medium Fast"
-  ],
-  "(284, 0)": [
-    "Masquerain",
-    "Bug",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(285, 0)": [
-    "Shroomish",
-    "Grass",
-    None,
-    "Fluctuating"
-  ],
-  "(286, 0)": [
-    "Breloom",
-    "Grass",
-    "Fighting",
-    "Fluctuating"
-  ],
-  "(287, 0)": [
-    "Slakoth",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(288, 0)": [
-    "Vigoroth",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(289, 0)": [
-    "Slaking",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(290, 0)": [
-    "Nincada",
-    "Bug",
-    "Ground",
-    "Erratic"
-  ],
-  "(291, 0)": [
-    "Ninjask",
-    "Bug",
-    "Flying",
-    "Erratic"
-  ],
-  "(292, 0)": [
-    "Shedinja",
-    "Bug",
-    "Ghost",
-    "Erratic"
-  ],
-  "(293, 0)": [
-    "Whismur",
-    "Normal",
-    None,
-    "Medium Slow"
-  ],
-  "(294, 0)": [
-    "Loudred",
-    "Normal",
-    None,
-    "Medium Slow"
-  ],
-  "(295, 0)": [
-    "Exploud",
-    "Normal",
-    None,
-    "Medium Slow"
-  ],
-  "(296, 0)": [
-    "Makuhita",
-    "Fighting",
-    None,
-    "Fluctuating"
-  ],
-  "(297, 0)": [
-    "Hariyama",
-    "Fighting",
-    None,
-    "Fluctuating"
-  ],
-  "(298, 0)": [
-    "Azurill",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(299, 0)": [
-    "Nosepass",
-    "Rock",
-    None,
-    "Medium Fast"
-  ],
-  "(300, 0)": [
-    "Skitty",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(301, 0)": [
-    "Delcatty",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(302, 0)": [
-    "Sableye",
-    "Dark",
-    "Ghost",
-    "Medium Slow"
-  ],
-  "(303, 0)": [
-    "Mawile",
-    "Steel",
-    None,
-    "Fast"
-  ],
-  "(304, 0)": [
-    "Aron",
-    "Steel",
-    "Rock",
-    "Slow"
-  ],
-  "(305, 0)": [
-    "Lairon",
-    "Steel",
-    "Rock",
-    "Slow"
-  ],
-  "(306, 0)": [
-    "Aggron",
-    "Steel",
-    "Rock",
-    "Slow"
-  ],
-  "(307, 0)": [
-    "Meditite",
-    "Fighting",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(308, 0)": [
-    "Medicham",
-    "Fighting",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(309, 0)": [
-    "Electrike",
-    "Electric",
-    None,
-    "Slow"
-  ],
-  "(310, 0)": [
-    "Manectric",
-    "Electric",
-    None,
-    "Slow"
-  ],
-  "(311, 0)": [
-    "Plusle",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(312, 0)": [
-    "Minun",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(313, 0)": [
-    "Volbeat",
-    "Bug",
-    None,
-    "Erratic"
-  ],
-  "(314, 0)": [
-    "Illumise",
-    "Bug",
-    None,
-    "Fluctuating"
-  ],
-  "(315, 0)": [
-    "Roselia",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(316, 0)": [
-    "Gulpin",
-    "Poison",
-    None,
-    "Fluctuating"
-  ],
-  "(317, 0)": [
-    "Swalot",
-    "Poison",
-    None,
-    "Fluctuating"
-  ],
-  "(318, 0)": [
-    "Carvanha",
-    "Water",
-    "Dark",
-    "Slow"
-  ],
-  "(319, 0)": [
-    "Sharpedo",
-    "Water",
-    "Dark",
-    "Slow"
-  ],
-  "(320, 0)": [
-    "Wailmer",
-    "Water",
-    None,
-    "Fluctuating"
-  ],
-  "(321, 0)": [
-    "Wailord",
-    "Water",
-    None,
-    "Fluctuating"
-  ],
-  "(322, 0)": [
-    "Numel",
-    "Fire",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(323, 0)": [
-    "Camerupt",
-    "Fire",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(324, 0)": [
-    "Torkoal",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(325, 0)": [
-    "Spoink",
-    "Psychic",
-    None,
-    "Fast"
-  ],
-  "(326, 0)": [
-    "Grumpig",
-    "Psychic",
-    None,
-    "Fast"
-  ],
-  "(327, 0)": [
-    "Spinda",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(328, 0)": [
-    "Trapinch",
-    "Ground",
-    None,
-    "Medium Slow"
-  ],
-  "(329, 0)": [
-    "Vibrava",
-    "Ground",
-    "Dragon",
-    "Medium Slow"
-  ],
-  "(330, 0)": [
-    "Flygon",
-    "Ground",
-    "Dragon",
-    "Medium Slow"
-  ],
-  "(331, 0)": [
-    "Cacnea",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(332, 0)": [
-    "Cacturne",
-    "Grass",
-    "Dark",
-    "Medium Slow"
-  ],
-  "(333, 0)": [
-    "Swablu",
-    "Normal",
-    "Flying",
-    "Erratic"
-  ],
-  "(334, 0)": [
-    "Altaria",
-    "Dragon",
-    "Flying",
-    "Erratic"
-  ],
-  "(335, 0)": [
-    "Zangoose",
-    "Normal",
-    None,
-    "Erratic"
-  ],
-  "(336, 0)": [
-    "Seviper",
-    "Poison",
-    None,
-    "Fluctuating"
-  ],
-  "(337, 0)": [
-    "Lunatone",
-    "Rock",
-    "Psychic",
-    "Fast"
-  ],
-  "(338, 0)": [
-    "Solrock",
-    "Rock",
-    "Psychic",
-    "Fast"
-  ],
-  "(339, 0)": [
-    "Barboach",
-    "Water",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(340, 0)": [
-    "Whiscash",
-    "Water",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(341, 0)": [
-    "Corphish",
-    "Water",
-    None,
-    "Fluctuating"
-  ],
-  "(342, 0)": [
-    "Crawdaunt",
-    "Water",
-    "Dark",
-    "Fluctuating"
-  ],
-  "(343, 0)": [
-    "Baltoy",
-    "Ground",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(344, 0)": [
-    "Claydol",
-    "Ground",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(345, 0)": [
-    "Lileep",
-    "Rock",
-    "Grass",
-    "Erratic"
-  ],
-  "(346, 0)": [
-    "Cradily",
-    "Rock",
-    "Grass",
-    "Erratic"
-  ],
-  "(347, 0)": [
-    "Anorith",
-    "Rock",
-    "Bug",
-    "Erratic"
-  ],
-  "(348, 0)": [
-    "Armaldo",
-    "Rock",
-    "Bug",
-    "Erratic"
-  ],
-  "(349, 0)": [
-    "Feebas",
-    "Water",
-    None,
-    "Erratic"
-  ],
-  "(350, 0)": [
-    "Milotic",
-    "Water",
-    None,
-    "Erratic"
-  ],
-  "(351, 0)": [
-    "Castform",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(351, 1)": [
-    "Castform",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(351, 2)": [
-    "Castform",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(351, 3)": [
-    "Castform",
-    "Ice",
-    None,
-    "Medium Fast"
-  ],
-  "(352, 0)": [
-    "Kecleon",
-    "Normal",
-    None,
-    "Medium Slow"
-  ],
-  "(353, 0)": [
-    "Shuppet",
-    "Ghost",
-    None,
-    "Fast"
-  ],
-  "(354, 0)": [
-    "Banette",
-    "Ghost",
-    None,
-    "Fast"
-  ],
-  "(355, 0)": [
-    "Duskull",
-    "Ghost",
-    None,
-    "Fast"
-  ],
-  "(356, 0)": [
-    "Dusclops",
-    "Ghost",
-    None,
-    "Fast"
-  ],
-  "(357, 0)": [
-    "Tropius",
-    "Grass",
-    "Flying",
-    "Slow"
-  ],
-  "(358, 0)": [
-    "Chimecho",
-    "Psychic",
-    None,
-    "Fast"
-  ],
-  "(359, 0)": [
-    "Absol",
-    "Dark",
-    None,
-    "Medium Slow"
-  ],
-  "(360, 0)": [
-    "Wynaut",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(361, 0)": [
-    "Snorunt",
-    "Ice",
-    None,
-    "Medium Fast"
-  ],
-  "(362, 0)": [
-    "Glalie",
-    "Ice",
-    None,
-    "Medium Fast"
-  ],
-  "(363, 0)": [
-    "Spheal",
-    "Ice",
-    "Water",
-    "Medium Slow"
-  ],
-  "(364, 0)": [
-    "Sealeo",
-    "Ice",
-    "Water",
-    "Medium Slow"
-  ],
-  "(365, 0)": [
-    "Walrein",
-    "Ice",
-    "Water",
-    "Medium Slow"
-  ],
-  "(366, 0)": [
-    "Clamperl",
-    "Water",
-    None,
-    "Erratic"
-  ],
-  "(367, 0)": [
-    "Huntail",
-    "Water",
-    None,
-    "Erratic"
-  ],
-  "(368, 0)": [
-    "Gorebyss",
-    "Water",
-    None,
-    "Erratic"
-  ],
-  "(369, 0)": [
-    "Relicanth",
-    "Water",
-    "Rock",
-    "Slow"
-  ],
-  "(370, 0)": [
-    "Luvdisc",
-    "Water",
-    None,
-    "Fast"
-  ],
-  "(371, 0)": [
-    "Bagon",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(372, 0)": [
-    "Shelgon",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(373, 0)": [
-    "Salamence",
-    "Dragon",
-    "Flying",
-    "Slow"
-  ],
-  "(374, 0)": [
-    "Beldum",
-    "Steel",
-    "Psychic",
-    "Slow"
-  ],
-  "(375, 0)": [
-    "Metang",
-    "Steel",
-    "Psychic",
-    "Slow"
-  ],
-  "(376, 0)": [
-    "Metagross",
-    "Steel",
-    "Psychic",
-    "Slow"
-  ],
-  "(377, 0)": [
-    "Regirock",
-    "Rock",
-    None,
-    "Slow"
-  ],
-  "(378, 0)": [
-    "Regice",
-    "Ice",
-    None,
-    "Slow"
-  ],
-  "(379, 0)": [
-    "Registeel",
-    "Steel",
-    None,
-    "Slow"
-  ],
-  "(380, 0)": [
-    "Latias",
-    "Dragon",
-    "Psychic",
-    "Slow"
-  ],
-  "(381, 0)": [
-    "Latios",
-    "Dragon",
-    "Psychic",
-    "Slow"
-  ],
-  "(382, 0)": [
-    "Kyogre",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(383, 0)": [
-    "Groudon",
-    "Ground",
-    None,
-    "Slow"
-  ],
-  "(384, 0)": [
-    "Rayquaza",
-    "Dragon",
-    "Flying",
-    "Slow"
-  ],
-  "(385, 0)": [
-    "Jirachi",
-    "Steel",
-    "Psychic",
-    "Slow"
-  ],
-  "(386, 0)": [
-    "Deoxys",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(386, 1)": [
-    "Deoxys",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(386, 2)": [
-    "Deoxys",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(386, 3)": [
-    "Deoxys",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(387, 0)": [
-    "Turtwig",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(388, 0)": [
-    "Grotle",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(389, 0)": [
-    "Torterra",
-    "Grass",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(390, 0)": [
-    "Chimchar",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(391, 0)": [
-    "Monferno",
-    "Fire",
-    "Fighting",
-    "Medium Slow"
-  ],
-  "(392, 0)": [
-    "Infernape",
-    "Fire",
-    "Fighting",
-    "Medium Slow"
-  ],
-  "(393, 0)": [
-    "Piplup",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(394, 0)": [
-    "Prinplup",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(395, 0)": [
-    "Empoleon",
-    "Water",
-    "Steel",
-    "Medium Slow"
-  ],
-  "(396, 0)": [
-    "Starly",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(397, 0)": [
-    "Staravia",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(398, 0)": [
-    "Staraptor",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(399, 0)": [
-    "Bidoof",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(400, 0)": [
-    "Bibarel",
-    "Normal",
-    "Water",
-    "Medium Fast"
-  ],
-  "(401, 0)": [
-    "Kricketot",
-    "Bug",
-    None,
-    "Medium Slow"
-  ],
-  "(402, 0)": [
-    "Kricketune",
-    "Bug",
-    None,
-    "Medium Slow"
-  ],
-  "(403, 0)": [
-    "Shinx",
-    "Electric",
-    None,
-    "Medium Slow"
-  ],
-  "(404, 0)": [
-    "Luxio",
-    "Electric",
-    None,
-    "Medium Slow"
-  ],
-  "(405, 0)": [
-    "Luxray",
-    "Electric",
-    None,
-    "Medium Slow"
-  ],
-  "(406, 0)": [
-    "Budew",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(407, 0)": [
-    "Roserade",
-    "Grass",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(408, 0)": [
-    "Cranidos",
-    "Rock",
-    None,
-    "Erratic"
-  ],
-  "(409, 0)": [
-    "Rampardos",
-    "Rock",
-    None,
-    "Erratic"
-  ],
-  "(410, 0)": [
-    "Shieldon",
-    "Rock",
-    "Steel",
-    "Erratic"
-  ],
-  "(411, 0)": [
-    "Bastiodon",
-    "Rock",
-    "Steel",
-    "Erratic"
-  ],
-  "(412, 0)": [
-    "Burmy",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(412, 1)": [
-    "Burmy",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(412, 2)": [
-    "Burmy",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(413, 0)": [
-    "Wormadam",
-    "Bug",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(413, 1)": [
-    "Wormadam",
-    "Bug",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(413, 2)": [
-    "Wormadam",
-    "Bug",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(414, 0)": [
-    "Mothim",
-    "Bug",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(415, 0)": [
-    "Combee",
-    "Bug",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(416, 0)": [
-    "Vespiquen",
-    "Bug",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(417, 0)": [
-    "Pachirisu",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(418, 0)": [
-    "Buizel",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(419, 0)": [
-    "Floatzel",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(420, 0)": [
-    "Cherubi",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(421, 0)": [
-    "Cherrim",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(421, 1)": [
-    "Cherrim",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(422, 0)": [
-    "Shellos",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(422, 1)": [
-    "Shellos",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(423, 0)": [
-    "Gastrodon",
-    "Water",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(423, 1)": [
-    "Gastrodon",
-    "Water",
-    "Ground",
-    "Medium Fast"
-  ],
-  "(424, 0)": [
-    "Ambipom",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(425, 0)": [
-    "Drifloon",
-    "Ghost",
-    "Flying",
-    "Fluctuating"
-  ],
-  "(426, 0)": [
-    "Drifblim",
-    "Ghost",
-    "Flying",
-    "Fluctuating"
-  ],
-  "(427, 0)": [
-    "Buneary",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(428, 0)": [
-    "Lopunny",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(429, 0)": [
-    "Mismagius",
-    "Ghost",
-    None,
-    "Fast"
-  ],
-  "(430, 0)": [
-    "Honchkrow",
-    "Dark",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(431, 0)": [
-    "Glameow",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(432, 0)": [
-    "Purugly",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(433, 0)": [
-    "Chingling",
-    "Psychic",
-    None,
-    "Fast"
-  ],
-  "(434, 0)": [
-    "Stunky",
-    "Poison",
-    "Dark",
-    "Medium Fast"
-  ],
-  "(435, 0)": [
-    "Skuntank",
-    "Poison",
-    "Dark",
-    "Medium Fast"
-  ],
-  "(436, 0)": [
-    "Bronzor",
-    "Steel",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(437, 0)": [
-    "Bronzong",
-    "Steel",
-    "Psychic",
-    "Medium Fast"
-  ],
-  "(438, 0)": [
-    "Bonsly",
-    "Rock",
-    None,
-    "Medium Fast"
-  ],
-  "(439, 0)": [
-    "Mime Jr.",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(440, 0)": [
-    "Happiny",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(441, 0)": [
-    "Chatot",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(442, 0)": [
-    "Spiritomb",
-    "Ghost",
-    "Dark",
-    "Medium Fast"
-  ],
-  "(443, 0)": [
-    "Gible",
-    "Dragon",
-    "Ground",
-    "Slow"
-  ],
-  "(444, 0)": [
-    "Gabite",
-    "Dragon",
-    "Ground",
-    "Slow"
-  ],
-  "(445, 0)": [
-    "Garchomp",
-    "Dragon",
-    "Ground",
-    "Slow"
-  ],
-  "(446, 0)": [
-    "Munchlax",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(447, 0)": [
-    "Riolu",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(448, 0)": [
-    "Lucario",
-    "Fighting",
-    "Steel",
-    "Medium Slow"
-  ],
-  "(449, 0)": [
-    "Hippopotas",
-    "Ground",
-    None,
-    "Slow"
-  ],
-  "(450, 0)": [
-    "Hippowdon",
-    "Ground",
-    None,
-    "Slow"
-  ],
-  "(451, 0)": [
-    "Skorupi",
-    "Poison",
-    "Bug",
-    "Slow"
-  ],
-  "(452, 0)": [
-    "Drapion",
-    "Poison",
-    "Dark",
-    "Slow"
-  ],
-  "(453, 0)": [
-    "Croagunk",
-    "Poison",
-    "Fighting",
-    "Medium Fast"
-  ],
-  "(454, 0)": [
-    "Toxicroak",
-    "Poison",
-    "Fighting",
-    "Medium Fast"
-  ],
-  "(455, 0)": [
-    "Carnivine",
-    "Grass",
-    None,
-    "Slow"
-  ],
-  "(456, 0)": [
-    "Finneon",
-    "Water",
-    None,
-    "Erratic"
-  ],
-  "(457, 0)": [
-    "Lumineon",
-    "Water",
-    None,
-    "Erratic"
-  ],
-  "(458, 0)": [
-    "Mantyke",
-    "Water",
-    "Flying",
-    "Slow"
-  ],
-  "(459, 0)": [
-    "Snover",
-    "Grass",
-    "Ice",
-    "Slow"
-  ],
-  "(460, 0)": [
-    "Abomasnow",
-    "Grass",
-    "Ice",
-    "Slow"
-  ],
-  "(461, 0)": [
-    "Weavile",
-    "Dark",
-    "Ice",
-    "Medium Slow"
-  ],
-  "(462, 0)": [
-    "Magnezone",
-    "Electric",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(463, 0)": [
-    "Lickilicky",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(464, 0)": [
-    "Rhyperior",
-    "Ground",
-    "Rock",
-    "Slow"
-  ],
-  "(465, 0)": [
-    "Tangrowth",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(466, 0)": [
-    "Electivire",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(467, 0)": [
-    "Magmortar",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(468, 0)": [
-    "Togekiss",
-    "Normal",
-    "Flying",
-    "Fast"
-  ],
-  "(469, 0)": [
-    "Yanmega",
-    "Bug",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(470, 0)": [
-    "Leafeon",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(471, 0)": [
-    "Glaceon",
-    "Ice",
-    None,
-    "Medium Fast"
-  ],
-  "(472, 0)": [
-    "Gliscor",
-    "Ground",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(473, 0)": [
-    "Mamoswine",
-    "Ice",
-    "Ground",
-    "Slow"
-  ],
-  "(474, 0)": [
-    "Porygon-Z",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(475, 0)": [
-    "Gallade",
-    "Psychic",
-    "Fighting",
-    "Slow"
-  ],
-  "(476, 0)": [
-    "Probopass",
-    "Rock",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(477, 0)": [
-    "Dusknoir",
-    "Ghost",
-    None,
-    "Fast"
-  ],
-  "(478, 0)": [
-    "Froslass",
-    "Ice",
-    "Ghost",
-    "Medium Fast"
-  ],
-  "(479, 0)": [
-    "Rotom",
-    "Electric",
-    "Fire",
-    "Medium Fast"
-  ],
-  "(479, 1)": [
-    "Rotom",
-    "Electric",
-    "Fire",
-    "Medium Fast"
-  ],
-  "(479, 2)": [
-    "Rotom",
-    "Electric",
-    "Water",
-    "Medium Fast"
-  ],
-  "(479, 3)": [
-    "Rotom",
-    "Electric",
-    "Ice",
-    "Medium Fast"
-  ],
-  "(479, 4)": [
-    "Rotom",
-    "Electric",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(479, 5)": [
-    "Rotom",
-    "Electric",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(480, 0)": [
-    "Uxie",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(481, 0)": [
-    "Mesprit",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(482, 0)": [
-    "Azelf",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(483, 0)": [
-    "Dialga",
-    "Steel",
-    "Dragon",
-    "Slow"
-  ],
-  "(484, 0)": [
-    "Palkia",
-    "Water",
-    "Dragon",
-    "Slow"
-  ],
-  "(485, 0)": [
-    "Heatran",
-    "Fire",
-    "Steel",
-    "Slow"
-  ],
-  "(486, 0)": [
-    "Regigigas",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(487, 0)": [
-    "Giratina",
-    "Ghost",
-    "Dragon",
-    "Slow"
-  ],
-  "(487, 1)": [
-    "Giratina",
-    "Ghost",
-    "Dragon",
-    "Slow"
-  ],
-  "(488, 0)": [
-    "Cresselia",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(489, 0)": [
-    "Phione",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(490, 0)": [
-    "Manaphy",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(491, 0)": [
-    "Darkrai",
-    "Dark",
-    None,
-    "Slow"
-  ],
-  "(492, 0)": [
-    "Shaymin",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(492, 1)": [
-    "Shaymin",
-    "Grass",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(493, 0)": [
-    "Arceus",
-    "Normal",
-    None,
-    "Slow"
-  ],
-  "(493, 1)": [
-    "Arceus",
-    "Fighting",
-    None,
-    "Slow"
-  ],
-  "(493, 2)": [
-    "Arceus",
-    "Flying",
-    None,
-    "Slow"
-  ],
-  "(493, 3)": [
-    "Arceus",
-    "Poison",
-    None,
-    "Slow"
-  ],
-  "(493, 4)": [
-    "Arceus",
-    "Ground",
-    None,
-    "Slow"
-  ],
-  "(493, 5)": [
-    "Arceus",
-    "Rock",
-    None,
-    "Slow"
-  ],
-  "(493, 6)": [
-    "Arceus",
-    "Bug",
-    None,
-    "Slow"
-  ],
-  "(493, 7)": [
-    "Arceus",
-    "Ghost",
-    None,
-    "Slow"
-  ],
-  "(493, 8)": [
-    "Arceus",
-    "Steel",
-    None,
-    "Slow"
-  ],
-  "(493, 9)": [
-    "Arceus",
-    "Fire",
-    None,
-    "Slow"
-  ],
-  "(493, 10)": [
-    "Arceus",
-    "Water",
-    None,
-    "Slow"
-  ],
-  "(493, 11)": [
-    "Arceus",
-    "Grass",
-    None,
-    "Slow"
-  ],
-  "(493, 12)": [
-    "Arceus",
-    "Electric",
-    None,
-    "Slow"
-  ],
-  "(493, 13)": [
-    "Arceus",
-    "Psychic",
-    None,
-    "Slow"
-  ],
-  "(493, 14)": [
-    "Arceus",
-    "Ice",
-    None,
-    "Slow"
-  ],
-  "(493, 15)": [
-    "Arceus",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(493, 16)": [
-    "Arceus",
-    "Dark",
-    None,
-    "Slow"
-  ],
-  "(494, 0)": [
-    "Victini",
-    "Psychic",
-    "Fire",
-    "Slow"
-  ],
-  "(495, 0)": [
-    "Snivy",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(496, 0)": [
-    "Servine",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(497, 0)": [
-    "Serperior",
-    "Grass",
-    None,
-    "Medium Slow"
-  ],
-  "(498, 0)": [
-    "Tepig",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(499, 0)": [
-    "Pignite",
-    "Fire",
-    "Fighting",
-    "Medium Slow"
-  ],
-  "(500, 0)": [
-    "Emboar",
-    "Fire",
-    "Fighting",
-    "Medium Slow"
-  ],
-  "(501, 0)": [
-    "Oshawott",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(502, 0)": [
-    "Dewott",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(503, 0)": [
-    "Samurott",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(504, 0)": [
-    "Patrat",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(505, 0)": [
-    "Watchog",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(506, 0)": [
-    "Lillipup",
-    "Normal",
-    None,
-    "Medium Slow"
-  ],
-  "(507, 0)": [
-    "Herdier",
-    "Normal",
-    None,
-    "Medium Slow"
-  ],
-  "(508, 0)": [
-    "Stoutland",
-    "Normal",
-    None,
-    "Medium Slow"
-  ],
-  "(509, 0)": [
-    "Purrloin",
-    "Dark",
-    None,
-    "Medium Fast"
-  ],
-  "(510, 0)": [
-    "Liepard",
-    "Dark",
-    None,
-    "Medium Fast"
-  ],
-  "(511, 0)": [
-    "Pansage",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(512, 0)": [
-    "Simisage",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(513, 0)": [
-    "Pansear",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(514, 0)": [
-    "Simisear",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(515, 0)": [
-    "Panpour",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(516, 0)": [
-    "Simipour",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(517, 0)": [
-    "Munna",
-    "Psychic",
-    None,
-    "Fast"
-  ],
-  "(518, 0)": [
-    "Musharna",
-    "Psychic",
-    None,
-    "Fast"
-  ],
-  "(519, 0)": [
-    "Pidove",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(520, 0)": [
-    "Tranquill",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(521, 0)": [
-    "Unfezant",
-    "Normal",
-    "Flying",
-    "Medium Slow"
-  ],
-  "(522, 0)": [
-    "Blitzle",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(523, 0)": [
-    "Zebstrika",
-    "Electric",
-    None,
-    "Medium Fast"
-  ],
-  "(524, 0)": [
-    "Roggenrola",
-    "Rock",
-    None,
-    "Medium Slow"
-  ],
-  "(525, 0)": [
-    "Boldore",
-    "Rock",
-    None,
-    "Medium Slow"
-  ],
-  "(526, 0)": [
-    "Gigalith",
-    "Rock",
-    None,
-    "Medium Slow"
-  ],
-  "(527, 0)": [
-    "Woobat",
-    "Psychic",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(528, 0)": [
-    "Swoobat",
-    "Psychic",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(529, 0)": [
-    "Drilbur",
-    "Ground",
-    None,
-    "Medium Fast"
-  ],
-  "(530, 0)": [
-    "Excadrill",
-    "Ground",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(531, 0)": [
-    "Audino",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(532, 0)": [
-    "Timburr",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(533, 0)": [
-    "Gurdurr",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(534, 0)": [
-    "Conkeldurr",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(535, 0)": [
-    "Tympole",
-    "Water",
-    None,
-    "Medium Slow"
-  ],
-  "(536, 0)": [
-    "Palpitoad",
-    "Water",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(537, 0)": [
-    "Seismitoad",
-    "Water",
-    "Ground",
-    "Medium Slow"
-  ],
-  "(538, 0)": [
-    "Throh",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(539, 0)": [
-    "Sawk",
-    "Fighting",
-    None,
-    "Medium Fast"
-  ],
-  "(540, 0)": [
-    "Sewaddle",
-    "Bug",
-    "Grass",
-    "Medium Slow"
-  ],
-  "(541, 0)": [
-    "Swadloon",
-    "Bug",
-    "Grass",
-    "Medium Slow"
-  ],
-  "(542, 0)": [
-    "Leavanny",
-    "Bug",
-    "Grass",
-    "Medium Slow"
-  ],
-  "(543, 0)": [
-    "Venipede",
-    "Bug",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(544, 0)": [
-    "Whirlipede",
-    "Bug",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(545, 0)": [
-    "Scolipede",
-    "Bug",
-    "Poison",
-    "Medium Slow"
-  ],
-  "(546, 0)": [
-    "Cottonee",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(547, 0)": [
-    "Whimsicott",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(548, 0)": [
-    "Petilil",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(549, 0)": [
-    "Lilligant",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(550, 0)": [
-    "Basculin",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(550, 1)": [
-    "Basculin",
-    "Water",
-    None,
-    "Medium Fast"
-  ],
-  "(551, 0)": [
-    "Sandile",
-    "Ground",
-    "Dark",
-    "Medium Slow"
-  ],
-  "(552, 0)": [
-    "Krokorok",
-    "Ground",
-    "Dark",
-    "Medium Slow"
-  ],
-  "(553, 0)": [
-    "Krookodile",
-    "Ground",
-    "Dark",
-    "Medium Slow"
-  ],
-  "(554, 0)": [
-    "Darumaka",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(555, 0)": [
-    "Darmanitan",
-    "Fire",
-    None,
-    "Medium Slow"
-  ],
-  "(555, 1)": [
-    "Darmanitan",
-    "Fire",
-    "Psychic",
-    "Medium Slow"
-  ],
-  "(556, 0)": [
-    "Maractus",
-    "Grass",
-    None,
-    "Medium Fast"
-  ],
-  "(557, 0)": [
-    "Dwebble",
-    "Bug",
-    "Rock",
-    "Medium Fast"
-  ],
-  "(558, 0)": [
-    "Crustle",
-    "Bug",
-    "Rock",
-    "Medium Fast"
-  ],
-  "(559, 0)": [
-    "Scraggy",
-    "Dark",
-    "Fighting",
-    "Medium Fast"
-  ],
-  "(560, 0)": [
-    "Scrafty",
-    "Dark",
-    "Fighting",
-    "Medium Fast"
-  ],
-  "(561, 0)": [
-    "Sigilyph",
-    "Psychic",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(562, 0)": [
-    "Yamask",
-    "Ghost",
-    None,
-    "Medium Fast"
-  ],
-  "(563, 0)": [
-    "Cofagrigus",
-    "Ghost",
-    None,
-    "Medium Fast"
-  ],
-  "(564, 0)": [
-    "Tirtouga",
-    "Water",
-    "Rock",
-    "Medium Fast"
-  ],
-  "(565, 0)": [
-    "Carracosta",
-    "Water",
-    "Rock",
-    "Medium Fast"
-  ],
-  "(566, 0)": [
-    "Archen",
-    "Rock",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(567, 0)": [
-    "Archeops",
-    "Rock",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(568, 0)": [
-    "Trubbish",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(569, 0)": [
-    "Garbodor",
-    "Poison",
-    None,
-    "Medium Fast"
-  ],
-  "(570, 0)": [
-    "Zorua",
-    "Dark",
-    None,
-    "Medium Slow"
-  ],
-  "(571, 0)": [
-    "Zoroark",
-    "Dark",
-    None,
-    "Medium Slow"
-  ],
-  "(572, 0)": [
-    "Minccino",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(573, 0)": [
-    "Cinccino",
-    "Normal",
-    None,
-    "Fast"
-  ],
-  "(574, 0)": [
-    "Gothita",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(575, 0)": [
-    "Gothorita",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(576, 0)": [
-    "Gothitelle",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(577, 0)": [
-    "Solosis",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(578, 0)": [
-    "Duosion",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(579, 0)": [
-    "Reuniclus",
-    "Psychic",
-    None,
-    "Medium Slow"
-  ],
-  "(580, 0)": [
-    "Ducklett",
-    "Water",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(581, 0)": [
-    "Swanna",
-    "Water",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(582, 0)": [
-    "Vanillite",
-    "Ice",
-    None,
-    "Slow"
-  ],
-  "(583, 0)": [
-    "Vanillish",
-    "Ice",
-    None,
-    "Slow"
-  ],
-  "(584, 0)": [
-    "Vanilluxe",
-    "Ice",
-    None,
-    "Slow"
-  ],
-  "(585, 0)": [
-    "Deerling",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(585, 1)": [
-    "Deerling",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(585, 2)": [
-    "Deerling",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(585, 3)": [
-    "Deerling",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(586, 0)": [
-    "Sawsbuck",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(586, 1)": [
-    "Sawsbuck",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(586, 2)": [
-    "Sawsbuck",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(586, 3)": [
-    "Sawsbuck",
-    "Normal",
-    "Grass",
-    "Medium Fast"
-  ],
-  "(587, 0)": [
-    "Emolga",
-    "Electric",
-    "Flying",
-    "Medium Fast"
-  ],
-  "(588, 0)": [
-    "Karrablast",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(589, 0)": [
-    "Escavalier",
-    "Bug",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(590, 0)": [
-    "Foongus",
-    "Grass",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(591, 0)": [
-    "Amoonguss",
-    "Grass",
-    "Poison",
-    "Medium Fast"
-  ],
-  "(592, 0)": [
-    "Frillish",
-    "Water",
-    "Ghost",
-    "Medium Fast"
-  ],
-  "(593, 0)": [
-    "Jellicent",
-    "Water",
-    "Ghost",
-    "Medium Fast"
-  ],
-  "(594, 0)": [
-    "Alomomola",
-    "Water",
-    None,
-    "Fast"
-  ],
-  "(595, 0)": [
-    "Joltik",
-    "Bug",
-    "Electric",
-    "Medium Fast"
-  ],
-  "(596, 0)": [
-    "Galvantula",
-    "Bug",
-    "Electric",
-    "Medium Fast"
-  ],
-  "(597, 0)": [
-    "Ferroseed",
-    "Grass",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(598, 0)": [
-    "Ferrothorn",
-    "Grass",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(599, 0)": [
-    "Klink",
-    "Steel",
-    None,
-    "Medium Slow"
-  ],
-  "(600, 0)": [
-    "Klang",
-    "Steel",
-    None,
-    "Medium Slow"
-  ],
-  "(601, 0)": [
-    "Klinklang",
-    "Steel",
-    None,
-    "Medium Slow"
-  ],
-  "(602, 0)": [
-    "Tynamo",
-    "Electric",
-    None,
-    "Slow"
-  ],
-  "(603, 0)": [
-    "Eelektrik",
-    "Electric",
-    None,
-    "Slow"
-  ],
-  "(604, 0)": [
-    "Eelektross",
-    "Electric",
-    None,
-    "Slow"
-  ],
-  "(605, 0)": [
-    "Elgyem",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(606, 0)": [
-    "Beheeyem",
-    "Psychic",
-    None,
-    "Medium Fast"
-  ],
-  "(607, 0)": [
-    "Litwick",
-    "Ghost",
-    "Fire",
-    "Medium Slow"
-  ],
-  "(608, 0)": [
-    "Lampent",
-    "Ghost",
-    "Fire",
-    "Medium Slow"
-  ],
-  "(609, 0)": [
-    "Chandelure",
-    "Ghost",
-    "Fire",
-    "Medium Slow"
-  ],
-  "(610, 0)": [
-    "Axew",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(611, 0)": [
-    "Fraxure",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(612, 0)": [
-    "Haxorus",
-    "Dragon",
-    None,
-    "Slow"
-  ],
-  "(613, 0)": [
-    "Cubchoo",
-    "Ice",
-    None,
-    "Medium Fast"
-  ],
-  "(614, 0)": [
-    "Beartic",
-    "Ice",
-    None,
-    "Medium Fast"
-  ],
-  "(615, 0)": [
-    "Cryogonal",
-    "Ice",
-    None,
-    "Medium Fast"
-  ],
-  "(616, 0)": [
-    "Shelmet",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(617, 0)": [
-    "Accelgor",
-    "Bug",
-    None,
-    "Medium Fast"
-  ],
-  "(618, 0)": [
-    "Stunfisk",
-    "Ground",
-    "Electric",
-    "Medium Fast"
-  ],
-  "(619, 0)": [
-    "Mienfoo",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(620, 0)": [
-    "Mienshao",
-    "Fighting",
-    None,
-    "Medium Slow"
-  ],
-  "(621, 0)": [
-    "Druddigon",
-    "Dragon",
-    None,
-    "Medium Fast"
-  ],
-  "(622, 0)": [
-    "Golett",
-    "Ground",
-    "Ghost",
-    "Medium Fast"
-  ],
-  "(623, 0)": [
-    "Golurk",
-    "Ground",
-    "Ghost",
-    "Medium Fast"
-  ],
-  "(624, 0)": [
-    "Pawniard",
-    "Dark",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(625, 0)": [
-    "Bisharp",
-    "Dark",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(626, 0)": [
-    "Bouffalant",
-    "Normal",
-    None,
-    "Medium Fast"
-  ],
-  "(627, 0)": [
-    "Rufflet",
-    "Normal",
-    "Flying",
-    "Slow"
-  ],
-  "(628, 0)": [
-    "Braviary",
-    "Normal",
-    "Flying",
-    "Slow"
-  ],
-  "(629, 0)": [
-    "Vullaby",
-    "Dark",
-    "Flying",
-    "Slow"
-  ],
-  "(630, 0)": [
-    "Mandibuzz",
-    "Dark",
-    "Flying",
-    "Slow"
-  ],
-  "(631, 0)": [
-    "Heatmor",
-    "Fire",
-    None,
-    "Medium Fast"
-  ],
-  "(632, 0)": [
-    "Durant",
-    "Bug",
-    "Steel",
-    "Medium Fast"
-  ],
-  "(633, 0)": [
-    "Deino",
-    "Dark",
-    "Dragon",
-    "Slow"
-  ],
-  "(634, 0)": [
-    "Zweilous",
-    "Dark",
-    "Dragon",
-    "Slow"
-  ],
-  "(635, 0)": [
-    "Hydreigon",
-    "Dark",
-    "Dragon",
-    "Slow"
-  ],
-  "(636, 0)": [
-    "Larvesta",
-    "Bug",
-    "Fire",
-    "Slow"
-  ],
-  "(637, 0)": [
-    "Volcarona",
-    "Bug",
-    "Fire",
-    "Slow"
-  ],
-  "(638, 0)": [
-    "Cobalion",
-    "Steel",
-    "Fighting",
-    "Slow"
-  ],
-  "(639, 0)": [
-    "Terrakion",
-    "Rock",
-    "Fighting",
-    "Slow"
-  ],
-  "(640, 0)": [
-    "Virizion",
-    "Grass",
-    "Fighting",
-    "Slow"
-  ],
-  "(641, 0)": [
-    "Tornadus",
-    "Flying",
-    None,
-    "Slow"
-  ],
-  "(641, 1)": [
-    "Tornadus",
-    "Flying",
-    None,
-    "Slow"
-  ],
-  "(642, 0)": [
-    "Thundurus",
-    "Electric",
-    "Flying",
-    "Slow"
-  ],
-  "(642, 1)": [
-    "Thundurus",
-    "Electric",
-    "Flying",
-    "Slow"
-  ],
-  "(643, 0)": [
-    "Reshiram",
-    "Dragon",
-    "Fire",
-    "Slow"
-  ],
-  "(644, 0)": [
-    "Zekrom",
-    "Dragon",
-    "Electric",
-    "Slow"
-  ],
-  "(645, 0)": [
-    "Landorus",
-    "Ground",
-    "Flying",
-    "Slow"
-  ],
-  "(645, 1)": [
-    "Landorus",
-    "Ground",
-    "Flying",
-    "Slow"
-  ],
-  "(646, 0)": [
-    "Kyurem",
-    "Dragon",
-    "Ice",
-    "Slow"
-  ],
-  "(646, 1)": [
-    "Kyurem",
-    "Dragon",
-    "Ice",
-    "Slow"
-  ],
-  "(646, 2)": [
-    "Kyurem",
-    "Dragon",
-    "Ice",
-    "Slow"
-  ],
-  "(647, 0)": [
-    "Keldeo",
-    "Water",
-    "Fighting",
-    "Slow"
-  ],
-  "(647, 1)": [
-    "Keldeo",
-    "Water",
-    "Fighting",
-    "Slow"
-  ],
-  "(648, 0)": [
-    "Meloetta",
-    "Normal",
-    "Psychic",
-    "Slow"
-  ],
-  "(648, 1)": [
-    "Meloetta",
-    "Normal",
-    "Fighting",
-    "Slow"
-  ],
-  "(649, 0)": [
-    "Genesect",
-    "Bug",
-    "Steel",
-    "Slow"
-  ],
-  "(649, 1)": [
-    "Genesect",
-    "Bug",
-    "Steel",
-    "Slow"
-  ],
-  "(649, 2)": [
-    "Genesect",
-    "Bug",
-    "Steel",
-    "Slow"
-  ],
-  "(649, 3)": [
-    "Genesect",
-    "Bug",
-    "Steel",
-    "Slow"
-  ],
-  "(649, 4)": [
-    "Genesect",
-    "Bug",
-    "Steel",
-    "Slow"
-  ]
+  1: {0: [11, 3, 3]},
+  2: {0: [11, 3, 3]},
+  3: {0: [11, 3, 3]},
+  4: {0: [9, None, 3]},
+  5: {0: [9, None, 3]},
+  6: {0: [9, 2, 3]},
+  7: {0: [10, None, 3]},
+  8: {0: [10, None, 3]},
+  9: {0: [10, None, 3]},
+  10: {0: [6, None, 0]},
+  11: {0: [6, None, 0]},
+  12: {0: [6, 2, 0]},
+  13: {0: [6, 3, 0]},
+  14: {0: [6, 3, 0]},
+  15: {0: [6, 3, 0]},
+  16: {0: [0, 2, 3]},
+  17: {0: [0, 2, 3]},
+  18: {0: [0, 2, 3]},
+  19: {0: [0, None, 0]},
+  20: {0: [0, None, 0]},
+  21: {0: [0, 2, 0]},
+  22: {0: [0, 2, 0]},
+  23: {0: [3, None, 0]},
+  24: {0: [3, None, 0]},
+  25: {0: [12, None, 0]},
+  26: {0: [12, None, 0]},
+  27: {0: [4, None, 0]},
+  28: {0: [4, None, 0]},
+  29: {0: [3, None, 3]},
+  30: {0: [3, None, 3]},
+  31: {0: [3, 4, 3]},
+  32: {0: [3, None, 3]},
+  33: {0: [3, None, 3]},
+  34: {0: [3, 4, 3]},
+  35: {0: [0, None, 4]},
+  36: {0: [0, None, 4]},
+  37: {0: [9, None, 0]},
+  38: {0: [9, None, 0]},
+  39: {0: [0, None, 4]},
+  40: {0: [0, None, 4]},
+  41: {0: [3, 2, 0]},
+  42: {0: [3, 2, 0]},
+  43: {0: [11, 3, 3]},
+  44: {0: [11, 3, 3]},
+  45: {0: [11, 3, 3]},
+  46: {0: [6, 11, 0]},
+  47: {0: [6, 11, 0]},
+  48: {0: [6, 3, 0]},
+  49: {0: [6, 3, 0]},
+  50: {0: [4, None, 0]},
+  51: {0: [4, None, 0]},
+  52: {0: [0, None, 0]},
+  53: {0: [0, None, 0]},
+  54: {0: [10, None, 0]},
+  55: {0: [10, None, 0]},
+  56: {0: [1, None, 0]},
+  57: {0: [1, None, 0]},
+  58: {0: [9, None, 5]},
+  59: {0: [9, None, 5]},
+  60: {0: [10, None, 3]},
+  61: {0: [10, None, 3]},
+  62: {0: [10, 1, 3]},
+  63: {0: [13, None, 3]},
+  64: {0: [13, None, 3]},
+  65: {0: [13, None, 3]},
+  66: {0: [1, None, 3]},
+  67: {0: [1, None, 3]},
+  68: {0: [1, None, 3]},
+  69: {0: [11, 3, 3]},
+  70: {0: [11, 3, 3]},
+  71: {0: [11, 3, 3]},
+  72: {0: [10, 3, 5]},
+  73: {0: [10, 3, 5]},
+  74: {0: [5, 4, 3]},
+  75: {0: [5, 4, 3]},
+  76: {0: [5, 4, 3]},
+  77: {0: [9, None, 0]},
+  78: {0: [9, None, 0]},
+  79: {0: [10, 13, 0]},
+  80: {0: [10, 13, 0]},
+  81: {0: [12, 8, 0]},
+  82: {0: [12, 8, 0]},
+  83: {0: [0, 2, 0]},
+  84: {0: [0, 2, 0]},
+  85: {0: [0, 2, 0]},
+  86: {0: [10, None, 0]},
+  87: {0: [10, 14, 0]},
+  88: {0: [3, None, 0]},
+  89: {0: [3, None, 0]},
+  90: {0: [10, None, 5]},
+  91: {0: [10, 14, 5]},
+  92: {0: [7, 3, 3]},
+  93: {0: [7, 3, 3]},
+  94: {0: [7, 3, 3]},
+  95: {0: [5, 4, 0]},
+  96: {0: [13, None, 0]},
+  97: {0: [13, None, 0]},
+  98: {0: [10, None, 0]},
+  99: {0: [10, None, 0]},
+  100: {0: [12, None, 0]},
+  101: {0: [12, None, 0]},
+  102: {0: [11, 13, 5]},
+  103: {0: [11, 13, 5]},
+  104: {0: [4, None, 0]},
+  105: {0: [4, None, 0]},
+  106: {0: [1, None, 0]},
+  107: {0: [1, None, 0]},
+  108: {0: [0, None, 0]},
+  109: {0: [3, None, 0]},
+  110: {0: [3, None, 0]},
+  111: {0: [4, 5, 5]},
+  112: {0: [4, 5, 5]},
+  113: {0: [0, None, 4]},
+  114: {0: [11, None, 0]},
+  115: {0: [0, None, 0]},
+  116: {0: [10, None, 0]},
+  117: {0: [10, None, 0]},
+  118: {0: [10, None, 0]},
+  119: {0: [10, None, 0]},
+  120: {0: [10, None, 5]},
+  121: {0: [10, 13, 5]},
+  122: {0: [13, None, 0]},
+  123: {0: [6, 2, 0]},
+  124: {0: [14, 13, 0]},
+  125: {0: [12, None, 0]},
+  126: {0: [9, None, 0]},
+  127: {0: [6, None, 5]},
+  128: {0: [0, None, 5]},
+  129: {0: [10, None, 5]},
+  130: {0: [10, 2, 5]},
+  131: {0: [10, 14, 5]},
+  132: {0: [0, None, 0]},
+  133: {0: [0, None, 0]},
+  134: {0: [10, None, 0]},
+  135: {0: [12, None, 0]},
+  136: {0: [9, None, 0]},
+  137: {0: [0, None, 0]},
+  138: {0: [5, 10, 0]},
+  139: {0: [5, 10, 0]},
+  140: {0: [5, 10, 0]},
+  141: {0: [5, 10, 0]},
+  142: {0: [5, 2, 5]},
+  143: {0: [0, None, 5]},
+  144: {0: [14, 2, 5]},
+  145: {0: [12, 2, 5]},
+  146: {0: [9, 2, 5]},
+  147: {0: [15, None, 5]},
+  148: {0: [15, None, 5]},
+  149: {0: [15, 2, 5]},
+  150: {0: [13, None, 5]},
+  151: {0: [13, None, 3]},
+  152: {0: [11, None, 3]},
+  153: {0: [11, None, 3]},
+  154: {0: [11, None, 3]},
+  155: {0: [9, None, 3]},
+  156: {0: [9, None, 3]},
+  157: {0: [9, None, 3]},
+  158: {0: [10, None, 3]},
+  159: {0: [10, None, 3]},
+  160: {0: [10, None, 3]},
+  161: {0: [0, None, 0]},
+  162: {0: [0, None, 0]},
+  163: {0: [0, 2, 0]},
+  164: {0: [0, 2, 0]},
+  165: {0: [6, 2, 4]},
+  166: {0: [6, 2, 4]},
+  167: {0: [6, 3, 4]},
+  168: {0: [6, 3, 4]},
+  169: {0: [3, 2, 0]},
+  170: {0: [10, 12, 5]},
+  171: {0: [10, 12, 5]},
+  172: {0: [12, None, 0]},
+  173: {0: [0, None, 4]},
+  174: {0: [0, None, 4]},
+  175: {0: [0, None, 4]},
+  176: {0: [0, 2, 4]},
+  177: {0: [13, 2, 0]},
+  178: {0: [13, 2, 0]},
+  179: {0: [12, None, 3]},
+  180: {0: [12, None, 3]},
+  181: {0: [12, None, 3]},
+  182: {0: [11, None, 3]},
+  183: {0: [10, None, 4]},
+  184: {0: [10, None, 4]},
+  185: {0: [5, None, 0]},
+  186: {0: [10, None, 3]},
+  187: {0: [11, 2, 3]},
+  188: {0: [11, 2, 3]},
+  189: {0: [11, 2, 3]},
+  190: {0: [0, None, 4]},
+  191: {0: [11, None, 3]},
+  192: {0: [11, None, 3]},
+  193: {0: [6, 2, 0]},
+  194: {0: [10, 4, 0]},
+  195: {0: [10, 4, 0]},
+  196: {0: [13, None, 0]},
+  197: {0: [16, None, 0]},
+  198: {0: [16, 2, 3]},
+  199: {0: [10, 13, 0]},
+  200: {0: [7, None, 4]},
+  201: {
+    0: [13, None, 0],
+    1: [13, None, 0],
+    2: [13, None, 0],
+    3: [13, None, 0],
+    4: [13, None, 0],
+    5: [13, None, 0],
+    6: [13, None, 0],
+    7: [13, None, 0],
+    8: [13, None, 0],
+    9: [13, None, 0],
+    10: [13, None, 0],
+    11: [13, None, 0],
+    12: [13, None, 0],
+    13: [13, None, 0],
+    14: [13, None, 0],
+    15: [13, None, 0],
+    16: [13, None, 0],
+    17: [13, None, 0],
+    18: [13, None, 0],
+    19: [13, None, 0],
+    20: [13, None, 0],
+    21: [13, None, 0],
+    22: [13, None, 0],
+    23: [13, None, 0],
+    24: [13, None, 0],
+    25: [13, None, 0],
+    26: [13, None, 0],
+    27: [13, None, 0]
+  },
+  202: {0: [13, None, 0]},
+  203: {0: [0, 13, 0]},
+  204: {0: [6, None, 0]},
+  205: {0: [6, 8, 0]},
+  206: {0: [0, None, 0]},
+  207: {0: [4, 2, 3]},
+  208: {0: [8, 4, 0]},
+  209: {0: [0, None, 4]},
+  210: {0: [0, None, 4]},
+  211: {0: [10, 3, 0]},
+  212: {0: [6, 8, 0]},
+  213: {0: [6, 5, 3]},
+  214: {0: [6, 1, 5]},
+  215: {0: [16, 14, 3]},
+  216: {0: [0, None, 0]},
+  217: {0: [0, None, 0]},
+  218: {0: [9, None, 0]},
+  219: {0: [9, 5, 0]},
+  220: {0: [14, 4, 5]},
+  221: {0: [14, 4, 5]},
+  222: {0: [10, 5, 4]},
+  223: {0: [10, None, 0]},
+  224: {0: [10, None, 0]},
+  225: {0: [14, 2, 4]},
+  226: {0: [10, 2, 5]},
+  227: {0: [8, 2, 5]},
+  228: {0: [16, 9, 5]},
+  229: {0: [16, 9, 5]},
+  230: {0: [10, 15, 0]},
+  231: {0: [4, None, 0]},
+  232: {0: [4, None, 0]},
+  233: {0: [0, None, 0]},
+  234: {0: [0, None, 5]},
+  235: {0: [0, None, 4]},
+  236: {0: [1, None, 0]},
+  237: {0: [1, None, 0]},
+  238: {0: [14, 13, 0]},
+  239: {0: [12, None, 0]},
+  240: {0: [9, None, 0]},
+  241: {0: [0, None, 5]},
+  242: {0: [0, None, 4]},
+  243: {0: [12, None, 5]},
+  244: {0: [9, None, 5]},
+  245: {0: [10, None, 5]},
+  246: {0: [5, 4, 5]},
+  247: {0: [5, 4, 5]},
+  248: {0: [5, 16, 5]},
+  249: {0: [13, 2, 5]},
+  250: {0: [9, 2, 5]},
+  251: {0: [13, 11, 3]},
+  252: {0: [11, None, 3]},
+  253: {0: [11, None, 3]},
+  254: {0: [11, None, 3]},
+  255: {0: [9, None, 3]},
+  256: {0: [9, 1, 3]},
+  257: {0: [9, 1, 3]},
+  258: {0: [10, None, 3]},
+  259: {0: [10, 4, 3]},
+  260: {0: [10, 4, 3]},
+  261: {0: [16, None, 0]},
+  262: {0: [16, None, 0]},
+  263: {0: [0, None, 0]},
+  264: {0: [0, None, 0]},
+  265: {0: [6, None, 0]},
+  266: {0: [6, None, 0]},
+  267: {0: [6, 2, 0]},
+  268: {0: [6, None, 0]},
+  269: {0: [6, 3, 0]},
+  270: {0: [10, 11, 3]},
+  271: {0: [10, 11, 3]},
+  272: {0: [10, 11, 3]},
+  273: {0: [11, None, 3]},
+  274: {0: [11, 16, 3]},
+  275: {0: [11, 16, 3]},
+  276: {0: [0, 2, 3]},
+  277: {0: [0, 2, 3]},
+  278: {0: [10, 2, 0]},
+  279: {0: [10, 2, 0]},
+  280: {0: [13, None, 5]},
+  281: {0: [13, None, 5]},
+  282: {0: [13, None, 5]},
+  283: {0: [6, 10, 0]},
+  284: {0: [6, 2, 0]},
+  285: {0: [11, None, 2]},
+  286: {0: [11, 1, 2]},
+  287: {0: [0, None, 5]},
+  288: {0: [0, None, 5]},
+  289: {0: [0, None, 5]},
+  290: {0: [6, 4, 1]},
+  291: {0: [6, 2, 1]},
+  292: {0: [6, 7, 1]},
+  293: {0: [0, None, 3]},
+  294: {0: [0, None, 3]},
+  295: {0: [0, None, 3]},
+  296: {0: [1, None, 2]},
+  297: {0: [1, None, 2]},
+  298: {0: [0, None, 4]},
+  299: {0: [5, None, 0]},
+  300: {0: [0, None, 4]},
+  301: {0: [0, None, 4]},
+  302: {0: [16, 7, 3]},
+  303: {0: [8, None, 4]},
+  304: {0: [8, 5, 5]},
+  305: {0: [8, 5, 5]},
+  306: {0: [8, 5, 5]},
+  307: {0: [1, 13, 0]},
+  308: {0: [1, 13, 0]},
+  309: {0: [12, None, 5]},
+  310: {0: [12, None, 5]},
+  311: {0: [12, None, 0]},
+  312: {0: [12, None, 0]},
+  313: {0: [6, None, 1]},
+  314: {0: [6, None, 2]},
+  315: {0: [11, 3, 3]},
+  316: {0: [3, None, 2]},
+  317: {0: [3, None, 2]},
+  318: {0: [10, 16, 5]},
+  319: {0: [10, 16, 5]},
+  320: {0: [10, None, 2]},
+  321: {0: [10, None, 2]},
+  322: {0: [9, 4, 0]},
+  323: {0: [9, 4, 0]},
+  324: {0: [9, None, 0]},
+  325: {0: [13, None, 4]},
+  326: {0: [13, None, 4]},
+  327: {0: [0, None, 4]},
+  328: {0: [4, None, 3]},
+  329: {0: [4, 15, 3]},
+  330: {0: [4, 15, 3]},
+  331: {0: [11, None, 3]},
+  332: {0: [11, 16, 3]},
+  333: {0: [0, 2, 1]},
+  334: {0: [15, 2, 1]},
+  335: {0: [0, None, 1]},
+  336: {0: [3, None, 2]},
+  337: {0: [5, 13, 4]},
+  338: {0: [5, 13, 4]},
+  339: {0: [10, 4, 0]},
+  340: {0: [10, 4, 0]},
+  341: {0: [10, None, 2]},
+  342: {0: [10, 16, 2]},
+  343: {0: [4, 13, 0]},
+  344: {0: [4, 13, 0]},
+  345: {0: [5, 11, 1]},
+  346: {0: [5, 11, 1]},
+  347: {0: [5, 6, 1]},
+  348: {0: [5, 6, 1]},
+  349: {0: [10, None, 1]},
+  350: {0: [10, None, 1]},
+  351: {
+    0: [0, None, 0],
+    1: [9, None, 0],
+    2: [10, None, 0],
+    3: [14, None, 0]
+  },
+  352: {0: [0, None, 3]},
+  353: {0: [7, None, 4]},
+  354: {0: [7, None, 4]},
+  355: {0: [7, None, 4]},
+  356: {0: [7, None, 4]},
+  357: {0: [11, 2, 5]},
+  358: {0: [13, None, 4]},
+  359: {0: [16, None, 3]},
+  360: {0: [13, None, 0]},
+  361: {0: [14, None, 0]},
+  362: {0: [14, None, 0]},
+  363: {0: [14, 10, 3]},
+  364: {0: [14, 10, 3]},
+  365: {0: [14, 10, 3]},
+  366: {0: [10, None, 1]},
+  367: {0: [10, None, 1]},
+  368: {0: [10, None, 1]},
+  369: {0: [10, 5, 5]},
+  370: {0: [10, None, 4]},
+  371: {0: [15, None, 5]},
+  372: {0: [15, None, 5]},
+  373: {0: [15, 2, 5]},
+  374: {0: [8, 13, 5]},
+  375: {0: [8, 13, 5]},
+  376: {0: [8, 13, 5]},
+  377: {0: [5, None, 5]},
+  378: {0: [14, None, 5]},
+  379: {0: [8, None, 5]},
+  380: {0: [15, 13, 5]},
+  381: {0: [15, 13, 5]},
+  382: {0: [10, None, 5]},
+  383: {0: [4, None, 5]},
+  384: {0: [15, 2, 5]},
+  385: {0: [8, 13, 5]},
+  386: {
+    0: [13, None, 5],
+    1: [13, None, 5],
+    2: [13, None, 5],
+    3: [13, None, 5]
+  },
+  387: {0: [11, None, 3]},
+  388: {0: [11, None, 3]},
+  389: {0: [11, 4, 3]},
+  390: {0: [9, None, 3]},
+  391: {0: [9, 1, 3]},
+  392: {0: [9, 1, 3]},
+  393: {0: [10, None, 3]},
+  394: {0: [10, None, 3]},
+  395: {0: [10, 8, 3]},
+  396: {0: [0, 2, 3]},
+  397: {0: [0, 2, 3]},
+  398: {0: [0, 2, 3]},
+  399: {0: [0, None, 0]},
+  400: {0: [0, 10, 0]},
+  401: {0: [6, None, 3]},
+  402: {0: [6, None, 3]},
+  403: {0: [12, None, 3]},
+  404: {0: [12, None, 3]},
+  405: {0: [12, None, 3]},
+  406: {0: [11, 3, 3]},
+  407: {0: [11, 3, 3]},
+  408: {0: [5, None, 1]},
+  409: {0: [5, None, 1]},
+  410: {0: [5, 8, 1]},
+  411: {0: [5, 8, 1]},
+  412: {
+    0: [6, None, 0],
+    1: [6, None, 0],
+    2: [6, None, 0]
+  },
+  413: {
+    0: [6, 11, 0],
+    1: [6, 4, 0],
+    2: [6, 8, 0]
+  },
+  414: {0: [6, 2, 0]},
+  415: {0: [6, 2, 3]},
+  416: {0: [6, 2, 3]},
+  417: {0: [12, None, 0]},
+  418: {0: [10, None, 0]},
+  419: {0: [10, None, 0]},
+  420: {0: [11, None, 0]},
+  421: {
+    0: [11, None, 0],
+    1: [11, None, 0]
+  },
+  422: {0: [10, None, 0], 1: [10, None, 0]},
+  423: {
+    0: [10, 4, 0],
+    1: [10, 4, 0]
+  },
+  424: {0: [0, None, 4]},
+  425: {0: [7, 2, 2]},
+  426: {0: [7, 2, 2]},
+  427: {0: [0, None, 0]},
+  428: {0: [0, None, 0]},
+  429: {0: [7, None, 4]},
+  430: {0: [16, 2, 3]},
+  431: {0: [0, None, 4]},
+  432: {0: [0, None, 4]},
+  433: {0: [13, None, 4]},
+  434: {0: [3, 16, 0]},
+  435: {0: [3, 16, 0]},
+  436: {0: [8, 13, 0]},
+  437: {0: [8, 13, 0]},
+  438: {0: [5, None, 0]},
+  439: {0: [13, None, 0]},
+  440: {0: [0, None, 4]},
+  441: {0: [0, 2, 3]},
+  442: {0: [7, 16, 0]},
+  443: {0: [15, 4, 5]},
+  444: {0: [15, 4, 5]},
+  445: {0: [15, 4, 5]},
+  446: {0: [0, None, 5]},
+  447: {0: [1, None, 3]},
+  448: {0: [1, 8, 3]},
+  449: {0: [4, None, 5]},
+  450: {0: [4, None, 5]},
+  451: {0: [3, 6, 5]},
+  452: {0: [3, 16, 5]},
+  453: {0: [3, 1, 0]},
+  454: {0: [3, 1, 0]},
+  455: {0: [11, None, 5]},
+  456: {0: [10, None, 1]},
+  457: {0: [10, None, 1]},
+  458: {0: [10, 2, 5]},
+  459: {0: [11, 14, 5]},
+  460: {0: [11, 14, 5]},
+  461: {0: [16, 14, 3]},
+  462: {0: [12, 8, 0]},
+  463: {0: [0, None, 0]},
+  464: {0: [4, 5, 5]},
+  465: {0: [11, None, 0]},
+  466: {0: [12, None, 0]},
+  467: {0: [9, None, 0]},
+  468: {0: [0, 2, 4]},
+  469: {0: [6, 2, 0]},
+  470: {0: [11, None, 0]},
+  471: {0: [14, None, 0]},
+  472: {0: [4, 2, 3]},
+  473: {0: [14, 4, 5]},
+  474: {0: [0, None, 0]},
+  475: {0: [13, 1, 5]},
+  476: {0: [5, 8, 0]},
+  477: {0: [7, None, 4]},
+  478: {0: [14, 7, 0]},
+  479: {
+    0: [12, 9, 0],
+    1: [12, 9, 0],
+    2: [12, 10, 0],
+    3: [12, 14, 0],
+    4: [12, 2, 0],
+    5: [12, 11, 0]
+  },
+  480: {0: [13, None, 5]},
+  481: {0: [13, None, 5]},
+  482: {0: [13, None, 5]},
+  483: {0: [8, 15, 5]},
+  484: {0: [10, 15, 5]},
+  485: {0: [9, 8, 5]},
+  486: {0: [0, None, 5]},
+  487: {
+    0: [7, 15, 5],
+    1: [7, 15, 5]
+  },
+  488: {0: [13, None, 5]},
+  489: {0: [10, None, 5]},
+  490: {0: [10, None, 5]},
+  491: {0: [16, None, 5]},
+  492: {
+    0: [11, None, 3],
+    1: [11, 2, 3]
+  },
+  493: {
+    0: [0, None, 5],
+    1: [1, None, 5],
+    2: [2, None, 5],
+    3: [3, None, 5],
+    4: [4, None, 5],
+    5: [5, None, 5],
+    6: [6, None, 5],
+    7: [7, None, 5],
+    8: [8, None, 5],
+    9: [9, None, 5],
+    10: [10, None, 5],
+    11: [11, None, 5],
+    12: [12, None, 5],
+    13: [13, None, 5],
+    14: [14, None, 5],
+    15: [15, None, 5],
+    16: [16, None, 5]
+  },
+  494: {0: [13, 9, 5]},
+  495: {0: [11, None, 3]},
+  496: {0: [11, None, 3]},
+  497: {0: [11, None, 3]},
+  498: {0: [9, None, 3]},
+  499: {0: [9, 1, 3]},
+  500: {0: [9, 1, 3]},
+  501: {0: [10, None, 3]},
+  502: {0: [10, None, 3]},
+  503: {0: [10, None, 3]},
+  504: {0: [0, None, 0]},
+  505: {0: [0, None, 0]},
+  506: {0: [0, None, 3]},
+  507: {0: [0, None, 3]},
+  508: {0: [0, None, 3]},
+  509: {0: [16, None, 0]},
+  510: {0: [16, None, 0]},
+  511: {0: [11, None, 0]},
+  512: {0: [11, None, 0]},
+  513: {0: [9, None, 0]},
+  514: {0: [9, None, 0]},
+  515: {0: [10, None, 0]},
+  516: {0: [10, None, 0]},
+  517: {0: [13, None, 4]},
+  518: {0: [13, None, 4]},
+  519: {0: [0, 2, 3]},
+  520: {0: [0, 2, 3]},
+  521: {0: [0, 2, 3]},
+  522: {0: [12, None, 0]},
+  523: {0: [12, None, 0]},
+  524: {0: [5, None, 3]},
+  525: {0: [5, None, 3]},
+  526: {0: [5, None, 3]},
+  527: {0: [13, 2, 0]},
+  528: {0: [13, 2, 0]},
+  529: {0: [4, None, 0]},
+  530: {0: [4, 8, 0]},
+  531: {0: [0, None, 4]},
+  532: {0: [1, None, 3]},
+  533: {0: [1, None, 3]},
+  534: {0: [1, None, 3]},
+  535: {0: [10, None, 3]},
+  536: {0: [10, 4, 3]},
+  537: {0: [10, 4, 3]},
+  538: {0: [1, None, 0]},
+  539: {0: [1, None, 0]},
+  540: {0: [6, 11, 3]},
+  541: {0: [6, 11, 3]},
+  542: {0: [6, 11, 3]},
+  543: {0: [6, 3, 3]},
+  544: {0: [6, 3, 3]},
+  545: {0: [6, 3, 3]},
+  546: {0: [11, None, 0]},
+  547: {0: [11, None, 0]},
+  548: {0: [11, None, 0]},
+  549: {0: [11, None, 0]},
+  550: {
+    0: [10, None, 0],
+    1: [10, None, 0]
+  },
+  551: {0: [4, 16, 3]},
+  552: {0: [4, 16, 3]},
+  553: {0: [4, 16, 3]},
+  554: {0: [9, None, 3]},
+  555: {
+    0: [9, None, 3],
+    1: [9, 13, 3]
+  },
+  556: {0: [11, None, 0]},
+  557: {0: [6, 5, 0]},
+  558: {0: [6, 5, 0]},
+  559: {0: [16, 1, 0]},
+  560: {0: [16, 1, 0]},
+  561: {0: [13, 2, 0]},
+  562: {0: [7, None, 0]},
+  563: {0: [7, None, 0]},
+  564: {0: [10, 5, 0]},
+  565: {0: [10, 5, 0]},
+  566: {0: [5, 2, 0]},
+  567: {0: [5, 2, 0]},
+  568: {0: [3, None, 0]},
+  569: {0: [3, None, 0]},
+  570: {0: [16, None, 3]},
+  571: {0: [16, None, 3]},
+  572: {0: [0, None, 4]},
+  573: {0: [0, None, 4]},
+  574: {0: [13, None, 3]},
+  575: {0: [13, None, 3]},
+  576: {0: [13, None, 3]},
+  577: {0: [13, None, 3]},
+  578: {0: [13, None, 3]},
+  579: {0: [13, None, 3]},
+  580: {0: [10, 2, 0]},
+  581: {0: [10, 2, 0]},
+  582: {0: [14, None, 5]},
+  583: {0: [14, None, 5]},
+  584: {0: [14, None, 5]},
+  585: {
+    0: [0, 11, 0],
+    1: [0, 11, 0],
+    2: [0, 11, 0],
+    3: [0, 11, 0]
+  },
+  586: {
+    0: [0, 11, 0],
+    1: [0, 11, 0],
+    2: [0, 11, 0],
+    3: [0, 11, 0]
+  },
+  587: {0: [12, 2, 0]},
+  588: {0: [6, None, 0]},
+  589: {0: [6, 8, 0]},
+  590: {0: [11, 3, 0]},
+  591: {0: [11, 3, 0]},
+  592: {0: [10, 7, 0]},
+  593: {0: [10, 7, 0]},
+  594: {0: [10, None, 4]},
+  595: {0: [6, 12, 0]},
+  596: {0: [6, 12, 0]},
+  597: {0: [11, 8, 0]},
+  598: {0: [11, 8, 0]},
+  599: {0: [8, None, 3]},
+  600: {0: [8, None, 3]},
+  601: {0: [8, None, 3]},
+  602: {0: [12, None, 5]},
+  603: {0: [12, None, 5]},
+  604: {0: [12, None, 5]},
+  605: {0: [13, None, 0]},
+  606: {0: [13, None, 0]},
+  607: {0: [7, 9, 3]},
+  608: {0: [7, 9, 3]},
+  609: {0: [7, 9, 3]},
+  610: {0: [15, None, 5]},
+  611: {0: [15, None, 5]},
+  612: {0: [15, None, 5]},
+  613: {0: [14, None, 0]},
+  614: {0: [14, None, 0]},
+  615: {0: [14, None, 0]},
+  616: {0: [6, None, 0]},
+  617: {0: [6, None, 0]},
+  618: {0: [4, 12, 0]},
+  619: {0: [1, None, 3]},
+  620: {0: [1, None, 3]},
+  621: {0: [15, None, 0]},
+  622: {0: [4, 7, 0]},
+  623: {0: [4, 7, 0]},
+  624: {0: [16, 8, 0]},
+  625: {0: [16, 8, 0]},
+  626: {0: [0, None, 0]},
+  627: {0: [0, 2, 5]},
+  628: {0: [0, 2, 5]},
+  629: {0: [16, 2, 5]},
+  630: {0: [16, 2, 5]},
+  631: {0: [9, None, 0]},
+  632: {0: [6, 8, 0]},
+  633: {0: [16, 15, 5]},
+  634: {0: [16, 15, 5]},
+  635: {0: [16, 15, 5]},
+  636: {0: [6, 9, 5]},
+  637: {0: [6, 9, 5]},
+  638: {0: [8, 1, 5]},
+  639: {0: [5, 1, 5]},
+  640: {0: [11, 1, 5]},
+  641: {
+    0: [2, None, 5],
+    1: [2, None, 5]
+  },
+  642: {
+    0: [12, 2, 5],
+    1: [12, 2, 5]
+  },
+  643: {0: [15, 9, 5]},
+  644: {0: [15, 12, 5]
+  },
+  645: {
+    0: [4, 2, 5],
+    1: [4, 2, 5]
+  },
+  646: {
+    0: [15, 14, 5],
+    1: [15, 14, 5],
+    2: [15, 14, 5]
+  },
+  647: {
+    0: [10, 1, 5],
+    1: [10, 1, 5]
+  },
+  648: {
+    0: [0, 13, 5],
+    1: [0, 1, 5]
+  },
+  649: {
+    0: [6, 8, 5],
+    1: [6, 8, 5],
+    2: [6, 8, 5],
+    3: [6, 8, 5],
+    4: [6, 8, 5]
+  }
 }

@@ -49,10 +49,10 @@ class GameSync:
         logger.info(f"Using configuration {self.configuration}")
 
         self.context = Context(self.configuration, UserManager(), PlayerManager(), DlcList())
-        
+
         host_address = None
-        host_name = getattr(self.configuration, 'host_name', 'local') 
-        
+        host_name = getattr(self.configuration, 'host_name', 'local')
+
         if host_name in ("local", "localhost"):
             host_address = self._get_local_host()
         else:
@@ -61,29 +61,29 @@ class GameSync:
             except socket.gaierror as e:
                 host_address = self._get_local_host()
                 logger.error(f"Could not resolve host name - falling back to {host_address} ", exc_info=e)
-                
+
         if host_address is None:
             logger.critical("ABORTING - hostAddress is null!")
             sys.exit(1)
-            
+
         self.host_address = host_address
 
         self.dns_server = DnsServer(self.host_address)
         self.gamespy_server = GameSpyServer(self.context)
-        self.http_server = HttpServer(self.context) 
-        
+        self.http_server = HttpServer(self.context)
+
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
         started = self.start_servers()
-        
+
         if started:
             time_taken = int(time.time() * 1000) - begin_time
             logger.info(f"Startup complete! Took a total of {time_taken} milliseconds")
             logger.info(f"Configure your DS to use the following DNS server: {self.host_address}")
         else:
             self.stop_servers()
-            
+
         self.initialized = True
 
     def _get_local_host(self) -> str:
@@ -97,10 +97,10 @@ class GameSync:
     def _load_config_file(self) -> Configuration:
         logger.info("Loading configuration ...")
         configuration = None
-        
+
         try:
             config_file = "config.json"
-            
+
             if not os.path.exists(config_file):
                 logger.info("No configuration file exists - default configuration will be used")
                 configuration = Configuration()
@@ -108,14 +108,14 @@ class GameSync:
                 with open(config_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     configuration = Configuration(**data)
-            
+
             with open(config_file, 'w', encoding='utf-8') as f:
                 json.dump(asdict(configuration), f, indent=4)
-                
+
         except Exception as e:
             logger.error("Could not load configuration - default configuration will be used", exc_info=e)
             configuration = Configuration()
-            
+
         return configuration
 
     def start_servers(self) -> bool:
@@ -131,7 +131,7 @@ class GameSync:
 
     def stop_servers(self):
         logger.info("Stopping servers ...")
-        
+
         if self.http_server:
             try:
                 self.http_server.stop()
@@ -153,7 +153,7 @@ class GameSync:
     def run_forever(self):
         if not self.initialized:
             return
-            
+
         try:
             while True:
                 time.sleep(1.0)
