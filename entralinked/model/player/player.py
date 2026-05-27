@@ -86,7 +86,7 @@ class Player:
         now_japan = now_local.astimezone(ZoneInfo("Asia/Tokyo"))
 
         player_data = {
-            "country_id": 220,
+            "country_id": 176, #United States
             "gsid": self.gsid,
             "sleeping_flag": 1,
             "rom_id": self.rom_code,
