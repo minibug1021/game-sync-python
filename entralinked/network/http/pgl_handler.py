@@ -113,7 +113,7 @@ class PglHandler:
             return HTTPStatus.BAD_REQUEST
 
         handler(req, output)
-        return buffer.getvalue(), 200, {"Content-Type": "application/octet-stream"}
+        return buffer.getvalue(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
 
     def handle_get_sleepy_list(self, req: PglRequest, output: LEOutputStream):
 
@@ -280,7 +280,7 @@ class PglHandler:
             return '', HTTPStatus.BAD_REQUEST
 
         handler(req, output)
-        return buffer.getvalue(), 200, {"Content-Type": "application/octet-stream"}
+        return buffer.getvalue(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
 
     def handle_download_save_data_finish(self, req: PglRequest, output: LEOutputStream):
         player: Player = self.player_manager.player_map.get(req.gsid)

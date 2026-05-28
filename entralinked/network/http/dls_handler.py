@@ -40,7 +40,7 @@ class DlsHandler:
 
     def add_handlers(self) -> Blueprint:
         blueprint = Blueprint('dls', __name__)
-        
+
         @blueprint.post('/download')
         def dls_post():
             return self.handle_download_request()
@@ -72,9 +72,9 @@ class DlsHandler:
         if session is None:
             logger.debug("Rejecting DLS request because the service session has expired")
             return HTTPStatus.UNAUTHORIZED
-        
+
         g.session_user = session.user
-        
+
         handlers = {
             "list": self.handle_retrieve_dlc_list,
             "contents": self.handle_retrieve_dlc_content
@@ -97,7 +97,7 @@ class DlsHandler:
             override = user.get_dlc_override(dlc_type)
             result = self.dlc_list.get_dlc_list_string([override])
             return result
-        
+
         return_list = self.dlc_list.get_dlc_list(game_code, dlc_type, req.attr2)
         return self.dlc_list.get_dlc_list_string(return_list)
 
@@ -110,7 +110,7 @@ class DlsHandler:
 
         if dlc is None:
             return HTTPStatus.NOT_FOUND
-        
+
         output = LEOutputStream(io.BytesIO())
         with open(dlc.path, "rb") as input_stream:
             output.write(input_stream.read())

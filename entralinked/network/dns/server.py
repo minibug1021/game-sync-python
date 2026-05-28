@@ -4,7 +4,6 @@ from dnslib import RR, A, QTYPE
 from dnslib.server import DNSServer, BaseResolver, DNSRecord
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level = logging.INFO)
 
 class FixedResolver(BaseResolver):
     def __init__(self, host_address: str):

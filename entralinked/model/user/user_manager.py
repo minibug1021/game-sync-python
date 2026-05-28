@@ -40,9 +40,9 @@ class UserManager:
     @staticmethod
     def is_valid_user_id(id: str):
         return bool(UserManager.user_id_pattern.fullmatch(id))
-    
+
     def load_user(self, input_file):
-        with open(input_file, "r") as f:
+        with open(input_file, "r", encoding="UTF-8") as f:
             data = json.load(f)
 
         user = User(data["id"], data["password"])
@@ -66,7 +66,7 @@ class UserManager:
         with open(UserManager.data_directory / f"WFC-{user.id}.json", "w+") as f:
             json.dump(user_data, f, indent=2, ensure_ascii=False)
         fix_ownership(UserManager.data_directory / f"WFC-{user.id}.json")
-        
+
         return True
 
     def create_service_session(self, user: User, service: str, branch_code: str):
@@ -82,7 +82,7 @@ class UserManager:
         self.service_sessions[auth_token] = session
 
         return ServiceCredentials(auth_token, raw_challenge)
-    
+
     def get_service_session(self, auth_token: str, service: str):
         session = self.service_sessions.get(auth_token)
 
@@ -92,29 +92,29 @@ class UserManager:
         if session.has_expired():
             del self.service_sessions[auth_token]
             return None
-        
+
         return session if session.service == service else None
-    
+
     def register_user(self, user_id: str, plain_password: str):
         if user_id in self.users:
             logger.warning(f"Attempted to register user with duplicate ID: {user_id}")
-        
+
         user = User(user_id, plain_password)
 
         if not self.save_user(user):
             return None
-        
+
         self.users[user_id] = user
         return user
-    
+
     def authenticate_user(self, user_id: str, password: str):
         user = self.users.get(user_id)
         return None if user is None or user.password != password else user
-    
+
     def create_profile_for_user(self, user: User, branch_code: str):
         if user.get_profile(branch_code) is not None:
             logger.warning(f"Attempted to create duplicate profile {branch_code} in user {user.id}")
-        
+
         profile_id = random.randint(0, 2 ** 31 - 1)
         profile = GameProfile(profile_id)
         user.add_profile(branch_code, profile)
@@ -122,11 +122,11 @@ class UserManager:
         if not self.save_user(user):
             user.remove_profile(branch_code)
             return None
-        
+
         return profile
-    
+
     def does_user_exist(self, id: str):
         return id in self.users
-    
+
     def get_users(self):
         return self.users.values()

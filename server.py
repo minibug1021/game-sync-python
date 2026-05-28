@@ -105,11 +105,11 @@ class GameSync:
                 logger.info("No configuration file exists - default configuration will be used")
                 configuration = Configuration()
             else:
-                with open(config_file, 'r', encoding='utf-8') as f:
+                with open(config_file, 'r', encoding="UTF-8") as f:
                     data = json.load(f)
                     configuration = Configuration(**data)
 
-            with open(config_file, 'w', encoding='utf-8') as f:
+            with open(config_file, 'w', encoding="UTF-8") as f:
                 json.dump(asdict(configuration), f, indent=4)
 
         except Exception as e:

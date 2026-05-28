@@ -25,13 +25,13 @@ class PlayerManager:
         self.load_player(self.data_directory)
 
     def load_player(self, input_folder: Path):
-        with open(input_folder / "player_data.json", "r") as f:
+        with open(input_folder / "player_data.json", "r", encoding="UTF-8") as f:
             player_data = json.load(f)
 
-        with open(input_folder / "game_sync.json", "r") as f:
+        with open(input_folder / "game_sync.json", "r", encoding="UTF-8") as f:
             game_sync = json.load(f)
 
-        with open(input_folder / "sleeping_pokemon.json", "r") as f:
+        with open(input_folder / "sleeping_pokemon.json", "r", encoding="UTF-8") as f:
             sleeping_pokemon = json.load(f)
 
         player = Player.from_dict(player_data, game_sync, sleeping_pokemon)
