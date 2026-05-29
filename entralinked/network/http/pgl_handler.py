@@ -176,9 +176,9 @@ class PglHandler:
 
         output.write_short(player.levels_gained)
         output.write(0)
-        output.write(self.get_dlc_index(user, player.musical, "MUSICAL", "musical.bin"))
-        output.write(self.get_dlc_index(user, player.cgear_skin, "CGEAR2" if is_version_2 else "CGEAR", "cgear.bin"))
-        output.write(self.get_dlc_index(user, player.dex_skin, "ZUKAN", "zukan.bin"))
+        output.write(self.get_dlc_index(user, player.musical, "MUSICAL", player.get_file("musical.bin")))
+        output.write(self.get_dlc_index(user, player.cgear_skin, "CGEAR2" if is_version_2 else "CGEAR", player.get_file("cgear.bin")))
+        output.write(self.get_dlc_index(user, player.dex_skin, "ZUKAN", player.get_file("zukan.bin")))
         output.write(0 if len(decor_list) == 0 else 1)
         output.write(0)
 
@@ -324,7 +324,6 @@ class PglHandler:
         save = SaveFile(save_stream)
 
         pkmn_data = save.get_dreamer_pokemon()
-        print(pkmn_data)
 
         dreamer_info = PkmnInfo(
             pokemon_no        = pkmn_data.natdex,
