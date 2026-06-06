@@ -24,6 +24,8 @@ from network.dns.server import DnsServer
 from network.http.http_server import HttpServer
 from network.gamespy.server import GameSpyServer
 
+from utility.db_manager import db
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO,
@@ -149,6 +151,8 @@ class GameSync:
                 self.dns_server.stop()
             except Exception:
                 pass
+
+        db.close()
 
     def run_forever(self):
         if not self.initialized:

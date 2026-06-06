@@ -17,24 +17,24 @@ class GsidUtility:
             output.append(GsidUtility.GSID_CHARTABLE[index])
 
         return ''.join(output)
-    
+
     @staticmethod
     def is_valid_gamesync_id(gsid: str):
         if gsid is None:
             return False
-        
+
         length = len(gsid)
         ugsid = 0
 
         if length != 10:
             return False
-        
+
         for i, char in enumerate(gsid):
             index = GsidUtility.GSID_CHARTABLE.find(char)
 
             if index == -1:
                 return False
-            
+
             ugsid |= index << (5 * i)
 
         output = ugsid & 0xFFFFFFFF

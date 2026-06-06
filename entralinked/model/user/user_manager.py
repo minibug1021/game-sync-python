@@ -10,7 +10,6 @@ from dataclasses import asdict
 from datetime import datetime, timedelta
 
 from model.user.user import User
-from utility.fix_ownership import fix_ownership
 from model.user.game_profile import GameProfile
 from model.user.service import ServiceCredentials, ServiceSession
 from utility.credential_generator import CredentialGenerator
@@ -30,7 +29,7 @@ class UserManager:
 
         logger.info("Loading user and profile data ...")
 
-        for file in UserManager.data_directory.iterdir():
+        for file in self.data_directory.iterdir():
             if "WFC" not in file.stem:
                 continue
             self.load_user(file)
@@ -63,9 +62,9 @@ class UserManager:
             "dlcOverrides": {k: asdict(v) for k, v in user.dlc_overrides.items()},
             "profileIdOverride": user.profile_id_override
         }
-        with open(UserManager.data_directory / f"WFC-{user.id}.json", "w+") as f:
+
+        with open(self.data_directory / f"WFC-{user.id}.json", "w+") as f:
             json.dump(user_data, f, indent=2, ensure_ascii=False)
-        fix_ownership(UserManager.data_directory / f"WFC-{user.id}.json")
 
         return True
 

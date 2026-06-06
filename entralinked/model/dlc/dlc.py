@@ -85,39 +85,38 @@ class DlcList:
         except IOError:
             logger.error(f"Could not read checksum data for {dlc_file.absolute()}")
             return None
-        
+
         return Dlc(dlc_file.absolute(), name, game_code, type, index, projected_size, checksum, checksum_embedded)
-    
+
     def get_dlc_list(self, game_code=None, type=None, index=None):
         if index is not None:
             return [dlc for dlc in self.dlc_list if
                     dlc.game_code == game_code and
                     dlc.type == type and
                     dlc.index == index]
-        
+
         elif type is not None:
             return [dlc for dlc in self.dlc_list if
                     dlc.game_code == game_code and
                     dlc.type == type]
-        
+
         elif game_code is not None:
             return [dlc for dlc in self.dlc_list if
                     dlc.game_code == game_code]
-        
+
         else:
             return self.dlc_list.copy()
-        
+
     def get_dlc_list_string(self, dlc_list: List[Dlc]):
         string_list = [f"{dlc.name}\t\t{dlc.type}\t{dlc.index}\t\t{dlc.projected_size}\r\n" for dlc in dlc_list]
         return ''.join(string_list)
-    
+
     def get_dlc(self, game_code: str, type: str, name: str):
         dlc_list = [dlc for dlc in self.get_dlc_list(game_code, type)
                     if dlc.name == name]
-        
+
         return None if len(dlc_list) == 0 else dlc_list[0]
-    
+
     def get_dlc_index(self, game_code: str, type: str, name: str):
         dlc = self.get_dlc(game_code, type, name)
         return 0 if dlc is None else dlc.index
-

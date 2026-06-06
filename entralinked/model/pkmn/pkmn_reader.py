@@ -1,7 +1,9 @@
 import math
 import struct
-from model.pkmn import extra_data
 from pathlib import Path
+from datetime import date
+from model.pkmn import extra_data
+from model.pkmn.extra_data import country_id_transform
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -137,6 +139,22 @@ BLOCKS_B2W2 = (
     (0x20D00, 0x01d4), # 50 Daycare
     (0x20F00, 0x01e0), # 51 Strength Boulder Status
     (0x21100, 0x00f0), # 52 Misc (Badge Flags, Money, Trainer Sayings)
+    (0x21200, 0x01b4), # 53 Entralink (Level & Powers etc)
+    (0x21400, 0x04dc), # 54 Pokedex
+    (0x21900, 0x0034), # 55 Encount (Swarm and other overworld info - 2C - swarm, 2D - repel steps, 2E repel type)
+    (0x21A00, 0x003c), # 56 Battle Subway Play Info
+    (0x21B00, 0x01ac), # 57 Battle Subway Score Info
+    (0x21D00, 0x0b90), # 58 Battle Subway Wi-Fi Info
+    (0x22900, 0x00ac), # 59 Online Records
+    (0x22A00, 0x0850), # 60 Entralink Forest pokémon data
+    (0x23300, 0x0284), # 61 Answered Questions
+    (0x23600, 0x0010), # 62 Unity Tower
+    (0x23700, 0x00a8), # 63 Battle Institute & PWT related data
+    (0x23800, 0x016c), # 64 ???
+    (0x23A00, 0x0080), # 65 ???
+    (0x23B00, 0x00fc), # 66 Hollow/Rival Block
+    (0x23C00, 0x16a8), # 67 Join Avenue Block
+    (0x25300, 0x0498)  # 68 Medal
 )
 
 # ---------------------------------------------------------------------------
@@ -217,9 +235,6 @@ for char_range in extra_data.valid_char_ranges:
 def _sanitize_str(string: str):
     return "".join(ch if ord(ch) in valid_chars else "?" for ch in string)
 
-def _replace_special_chars(string: str):
-    return "".join(extra_data.special_chars[ch] if ch in extra_data.special_chars else ch for ch in list(string))
-
 def _get_level(group_id: int, total_exp: int):
 
     def get_exp_for_level(n):
@@ -287,7 +302,7 @@ class DataReader:
 
         out_str = out_str.replace(b'\x00n$', b'\x00@&').replace(b'\x00m$', b'\x00B&').decode('UTF-16-LE')
 
-        return _replace_special_chars(_sanitize_str(out_str))
+        return _sanitize_str(out_str)
 
     def read_int(self, offset: int, length: int, byteorder: str = 'little') -> int:
         return int.from_bytes(self._slice(offset, length), byteorder=byteorder)
@@ -310,23 +325,85 @@ def _block_data(sav_data: bytearray, block_index: int, version: str) -> bytearra
 # High-level managers for data
 # ---------------------------------------------------------------------------
 
+
+class Medal(DataReader):
+
+    MAX_MEDALS = 255
+    MEDAL_SIZE = 0x4
+    EPOCH_YEAR = 2000
+
+    def __init__(self, sav_data: bytearray):
+        super().__init__(_block_data(sav_data, 68, "B2W2"))
+
+        self.favorite_medal = self._data[0x3FC]
+
+    @property
+    def medal_list(self) -> list[int]:
+        medals = []
+
+        for medal_index in range(self.MAX_MEDALS):
+            offset = self.MEDAL_SIZE * medal_index
+
+            medal_state = self.read_bits(offset + 0x2, 0, 3)
+
+            if medal_state == 4:
+                medal_date = self.parse_raw_date(self.read_int(offset, 2))
+                medals.append( (medal_date, medal_index) )
+
+        medals.sort(key=lambda m: (m[0], -m[1]), reverse=True)
+
+        return [i[1] for i in medals]
+
+    @staticmethod
+    def parse_raw_date(raw_date: int) -> date:
+        year  = (raw_date & 0x007F) + Medal.EPOCH_YEAR
+        month = (raw_date & 0x0780) >> 7
+        day   =  raw_date >> 11
+        return date(year, month, day)
+
 class Trainer(DataReader):
 
     def __init__(self, sav_data: bytearray, version: str):
         super().__init__(_block_data(sav_data, 27, version))
 
-        badge_data = _block_data(sav_data, 52, version)
+        dream_decor_data = _block_data(sav_data, 35, version)
+        badge_data       = _block_data(sav_data, 52, version)
 
-        country_id = self.read_int(0x1C, 1)
-        region_id  = self.read_int(0x1D, 1)
+        self.name       : str = self.read_str(0x4, 0x10)
+        self.country_id : int = country_id_transform[self.read_int(0x1C, 1)]
+        self.language   : int = self.read_int(0x1E, 1)
+        self.game       : int = self.read_int(0x1F, 1)
+        self.gender     : str = "Male" if self.read_int(0x21, 1) == 0 else "Female"
+        self.num_badges : int = (badge_data[0x4]).bit_count()
 
-        self.name      : str = self.read_str(0x4, 0x10)
-        self.country   : str = extra_data.country[country_id]
-        self.region    : str = extra_data.regions[country_id][region_id] if country_id in extra_data.regions else 0
-        self.language  : str = self.read_int(0x1E, 1)
-        self.game      : str = self.read_int(0x1F, 1)
-        self.gender    : str = "Male" if self.read_int(0x21, 1) == 0 else "Female"
-        self.num_badges: int = (badge_data[0x4]).bit_count()
+        self.played_hours  : int = self.read_int(0x24, 2)
+        self.played_minutes: int = self.read_int(0x26, 1)
+
+        self._loblolly_index: int = dream_decor_data[0x1A6]
+
+        RECORD_START = 0x120
+        RECORD_SIZE  = 26
+        ID_SIZE      = 2
+        NAME_SIZE    = 24
+
+        if self._loblolly_index in (1, 2, 3, 4, 6):
+            dream_decor = DataReader(dream_decor_data)
+
+            records = []
+
+            for i in range(5):
+                offset = RECORD_START + i * RECORD_SIZE
+
+                decor_id = dream_decor.read_int(offset, ID_SIZE)
+                decor_name = dream_decor.read_str(offset + ID_SIZE, NAME_SIZE)
+
+                records.append((decor_id, decor_name))
+
+            print(self._loblolly_index, records)
+
+            self.loblolly_decor = records[self._loblolly_index][0]
+        else:
+            self.loblolly_decor = None
 
 
 DREAMER_BLOCK_OFFSET = 0x1D300
@@ -378,6 +455,9 @@ class SaveFile:
 
     def trainer(self) -> Trainer:
         return Trainer(self._data, self.game_version)
+
+    def medal(self) -> Medal:
+        return Medal(self._data)
 
     def get_dreamer_pokemon(self) -> Pokemon:
         return Pokemon(self._data)

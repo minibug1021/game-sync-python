@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 from typing import List
+from random import randint
 from enum import Enum, auto
 from datetime import datetime
-from zoneinfo import ZoneInfo
-from dataclasses import asdict
+from dataclasses import dataclass, asdict
 
+from paths import GAME_SYNC_ROOT
+from utility.db_manager import db
 from model.pkmn import extra_data
 from model.pkmn.pkmn_info import PkmnInfo
 from model.player.dream_data import DreamEncounter, DreamDecor, DreamItem
@@ -16,6 +18,12 @@ class PlayerStatus(Enum):
     DREAMING = auto()
     WAKE_READY = auto()
 
+@dataclass
+class Medal:
+    medal_id: int
+    medal_name: str
+    is_recommend: bool
+
 class Player:
     def __init__(self, game_sync_id: str):
         self.game_sync_id = game_sync_id
@@ -25,17 +33,24 @@ class Player:
         self.avenue_visitors = []
         self.decor = []
 
+        self.medals = []
+
         self.name = None
         self.num_badges = None
+        self.country_id = None
+
+        self.played_hours = 0
+        self.played_minutes = 0
 
         self.status = PlayerStatus.AWAKE
 
         self.rom_code = 0
         self.language_code = 0
-        self.game_name = None
 
         self.dreamer_info = None
         self.levels_gained = 0
+
+        self.loblolly_decor = None
 
         self.cgear_skin = None
         self.dex_skin = None
@@ -44,23 +59,93 @@ class Player:
         self.custom_dex_skin = None
         self.custom_musical = None
 
-        self.data_directory = None
+        self.data_directory = GAME_SYNC_ROOT / "data"
+
+    @staticmethod
+    def _empty_player_data() -> dict:
+        empty_data = {
+            "member": {
+                "member_id":            randint(3_000_000, 3_500_000),
+                "pgl_name":             None,
+                "country_id":           None,
+                "special_flag":         0,
+                "bridge_flag":          0,
+                "special_disp_flag":    0,
+                "member_created_at":    datetime.now().strftime("%Y-%m-%d"),
+                "disclosure_flag":      0,    # privacy settings stuff
+                "list_disclosure_flag": 0,    # privacy settings stuff
+                "member_savedata_id":   None,
+                "gsid":                 None,
+                "sleep_time":           0,
+                "sleep_pokemon_count":  0,
+                "send_pokemon_count":   0,
+                "island_id":            201,
+                "shelf_id":             301,
+                "disable_flag":         0,
+                "wateringpot_id":       1,
+                "avator_id":            4,
+                "first_flag":           1,    # 0 = first time playing, 1 = not first time
+                "trial_flag":           0,
+                "sleeping_flag":        0,
+                "rom_id":               None,
+                "pokemon_no":           None,
+                "form_no":              None,
+                "player_badge_num":     None,
+                "last_started_at":      None,
+                "last_logined_at":      None,
+                "deleted_at":           None,
+                "pdw_copied_at":        None,
+                "pgl_copied_at":        None,
+                "item_deleted_flag":    0,
+                "world_id":             1,
+                "avator_name":          None,
+                "gsid_count":           1,
+                "point":                0,
+                "experiment_point":     0,
+                "is_initializing":      0,
+                "langcode":             None,
+                "player_name":          None,
+                "play_status":          PlayerStatus.AWAKE.value,
+                "isin_sleep_pokemon":   1,
+                "last_up_time":         None,
+                "last_up_time_strict":  None,
+                "rom_name":             None,
+                "alter_rom_name":       None,
+                "pokemon_name":         None,
+                "type1":                None,
+                "type2":                None,
+                "gscd":                 None,
+                "is_downloaded":        0,
+                "nextstart_remaintime": 0,
+                "last_started_at_timezone": None,
+                "unread_mail_count":    0
+            },
+            "token": None
+        }
+        return empty_data
 
     @classmethod
     def from_dict(cls, player_data: dict, game_sync: dict, sleeper: dict):
-        player_data = player_data["member"]
+        member_data = player_data["member"]
 
-        player = cls(player_data["gscd"])
+        player = cls(member_data["gscd"])
 
-        player.gsid = player_data["gsid"]
+        player.gsid = member_data["gsid"]
 
-        player.rom_code = player_data["rom_id"]
-        player.language_code = player_data["langcode"]
-        player.dreamer_info = PkmnInfo(**sleeper)
+        player.rom_code = member_data["rom_id"]
+        player.language_code = member_data["langcode"]
+        player.dreamer_info = PkmnInfo(**sleeper) if sleeper else None
         player.levels_gained = game_sync["levels_gained"]
 
-        player.name = player_data["player_name"]
-        player.num_badges = player_data["player_badge_num"]
+        player.loblolly_decor = game_sync["loblolly_decor"]
+
+        player.name = member_data["player_name"]
+        player.num_badges = member_data["player_badge_num"]
+
+        player.country_id = member_data["country_id"]
+
+        player.played_hours = game_sync["hours_played"]
+        player.played_minutes = game_sync["minutes_played"]
 
         player.cgear_skin = game_sync["cgear_skin"]
         player.dex_skin = game_sync["dex_skin"]
@@ -69,50 +154,55 @@ class Player:
         player.custom_dex_skin = game_sync["custom_dex_skin"]
         player.custom_musical = game_sync["custom_musical"]
 
-        try:
-            player.status = PlayerStatus(player_data["play_status"])
-        except KeyError:
-            player.status = PlayerStatus.AWAKE
+        player.status = PlayerStatus(member_data["play_status"])
 
         player.encounters = [DreamEncounter(**e) for e in game_sync.get("encounters", [])]
         player.items = [DreamItem(**i) for i in game_sync.get("items", [])]
         player.avenue_visitors = [AvenueVisitor(**v) for v in game_sync.get("avenue_visitors", [])]
         player.decor = [DreamDecor(**d) for d in game_sync.get("decor", [])]
 
+        player.medals = [Medal(**m) for m in player_data.get("medals", [])]
+
         return player
 
     def to_dict(self):
-        now_local = datetime.now().astimezone()
-        now_japan = now_local.astimezone(ZoneInfo("Asia/Tokyo"))
+        now = datetime.now().astimezone()
 
-        player_data = {
-            "country_id": 176, #United States
-            "gsid": self.gsid,
-            "sleeping_flag": 1,
-            "rom_id": self.rom_code,
-            "pokemon_no": self.dreamer_info.pokemon_no if self.dreamer_info else None,
-            "form_no": self.dreamer_info.form_no if self.dreamer_info else None,
-            "player_badge_num": self.num_badges,
-            #"last_started_at": int(now_japan.timestamp()),
-            #"last_logined_at": int(now_japan.timestamp()),
-            #"pdw_copied_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-            "pgl_copied_at": now_local.strftime("%Y-%m-%d %H:%M:%S"),
-            "langcode": self.language_code,
-            "player_name": self.name,
-            "play_status": self.status.value,
-            #"last_up_time": now_local.strftime("%m/%d/%y %I:%M %p"),
-            #"last_up_time_strict": now_japan.strftime("%Y-%m-%d %H:%M:%S"),
-            "rom_name": extra_data.version[(self.rom_code, self.language_code)],
-            "alter_rom_name": "Shiro*" if self.rom_code in (20, 22) else "Kuro*",
-            "pokemon_name": self.dreamer_info.pokemon_no if self.dreamer_info else None,
-            "type1": self.dreamer_info.type1 if self.dreamer_info else None,
-            "type2": self.dreamer_info.type2 if self.dreamer_info else None,
-            "gscd": self.game_sync_id,
-            #"last_started_at_timezone": int(now_local.timestamp()),
-        }
+        player_data = db.read(self.game_sync_id, "player_data") or Player._empty_player_data()
+
+        player_data["member"].update({
+            "pgl_name":            self.name,
+            "country_id":          self.country_id,
+
+            "member_savedata_id":  player_data["member"]["member_id"],
+            "gsid":                self.gsid,
+
+            "sleeping_flag":       1,
+            "rom_id":              self.rom_code,
+            "pokemon_no":          self.dreamer_info.pokemon_no if self.dreamer_info else None,
+            "form_no":             self.dreamer_info.form_no if self.dreamer_info else None,
+            "player_badge_num":    self.num_badges,
+
+            "pgl_copied_at":       now.strftime("%Y-%m-%d %H:%M:%S"),
+
+            "langcode":            self.language_code,
+            "player_name":         self.name,
+            "play_status":         PlayerStatus.SLEEPING.value,
+
+            "alter_rom_name":      "Shiro*" if self.rom_code in (20, 22) else "Kuro*",
+            "pokemon_name":        self.dreamer_info.pokemon_no if self.dreamer_info else None,
+            "type1":               self.dreamer_info.type1 if self.dreamer_info else None,
+            "type2":               self.dreamer_info.type2 if self.dreamer_info else None,
+            "gscd":                self.game_sync_id
+        })
+
+        if self.rom_code in (22, 23):
+            player_data.update({"medals": [asdict(medal) for medal in self.medals]})
 
         game_sync = {
             "levels_gained": self.levels_gained,
+            "hours_played": self.played_hours,
+            "minutes_played": self.played_minutes,
             "cgear_skin": self.cgear_skin,
             "dex_skin": self.dex_skin,
             "musical": self.musical,
@@ -122,7 +212,8 @@ class Player:
             "encounters": [asdict(encounter) for encounter in self.encounters],
             "items": [asdict(item) for item in self.items],
             "avenue_visitors": [asdict(visitor) for visitor in self.avenue_visitors],
-            "decor": [asdict(decor) for decor in self.decor]
+            "decor": [asdict(decor) for decor in self.decor],
+            "loblolly_decor": self.loblolly_decor
         }
 
         sleeper = asdict(self.dreamer_info) if self.dreamer_info is not None else None
@@ -136,7 +227,6 @@ class Player:
         self.items.clear()
         self.avenue_visitors.clear()
         self.decor.clear()
-        self.decor.extend(DreamDecor.DEFAULT_DECOR)
         self.levels_gained = 0
         self.cgear_skin = None
         self.dex_skin = None
