@@ -159,4 +159,5 @@ class DBManager:
             self._local.conn = None
 
 Path(ROOT_DIR / "save_data").mkdir(exist_ok=True)
+fix_ownership(Path(ROOT_DIR / "save_data"))
 db = DBManager(Path(ROOT_DIR / "save_data" / "pokemon_saves.db"))
