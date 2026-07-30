@@ -108,7 +108,7 @@ class DBManager:
                   "field_line3": "Steel-type move only once.",
                   "created_at": "2026-07-29 19:45",
                   "old_item_id": 563,
-                  "new_item_id": "563",
+                  "new_item_id": 563,
                   "old_item_name": "Steel Gem"
                 }
               ]
