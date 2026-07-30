@@ -87,19 +87,39 @@ class DBManager:
         }
 
         empty_share = {
-            "cnt": 0,
-            "list": [
-                
-            ]
+              "cnt": 1,
+              "share_list": [
+                {
+                  "material_id": "3011",
+                  "item_id": 563,
+                  "pokeitem": "Steel Gem",
+                  "x": 1,
+                  "y": 1,
+                  "history_id": "",
+                  "old_member_savedata_id": 3280335,
+                  "pokemon_no": 585,
+                  "form_no": 2,
+                  "pokename": "Deerling",
+                  "pgl_name": "Mikey",
+                  "nickname": "Mikey",
+                  "poke_nickname": "Deerling",
+                  "field_line1": "A gem with an essence of steel. When",
+                  "field_line2": "held, it strengthens the power of a",
+                  "field_line3": "Steel-type move only once.",
+                  "created_at": "2026-07-29 19:45",
+                  "old_item_id": 563,
+                  "new_item_id": "",
+                  "old_item_name": "Steel Gem"
+                }
+              ]
         }
 
-
-        query = "INSERT OR IGNORE INTO player_saves (gscd, crop_data, chest_data, share_data) VALUES (?, ?, ?)"
+        query = "INSERT OR IGNORE INTO player_saves (gscd, crop_data, chest_data, share_data) VALUES (?, ?, ?, ?)"
         with self._conn:
             self._conn.execute(query,
                                (str(gscd),
                                 json.dumps(empty_crop, indent=2),
-                                json.dumps(empty_chest, indent=2))
+                                json.dumps(empty_chest, indent=2),
                                 json.dumps(empty_share, indent=2))
                                 )
 
