@@ -29,7 +29,8 @@ class DBManager:
                     sleeping_pokemon TEXT,
                     game_sync TEXT,
                     crop_data TEXT,
-                    chest_data TEXT
+                    chest_data TEXT,
+                    share_data TEXT
                 )""")
 
         fix_ownership(self._db_path)
@@ -55,7 +56,7 @@ class DBManager:
     def _validate_column(self, column: str):
         valid_columns = [
             "player_data", "sleeping_pokemon", "game_sync",
-            "wfc_profile", "crop_data", "chest_data"
+            "wfc_profile", "crop_data", "chest_data", "share_data"
         ]
         if column not in valid_columns:
             raise ValueError(f"Invalid column name: '{column}'")
@@ -85,12 +86,41 @@ class DBManager:
             ]
         }
 
-        query = "INSERT OR IGNORE INTO player_saves (gscd, crop_data, chest_data) VALUES (?, ?, ?)"
+        empty_share = {
+              "cnt": 1,
+              "share_list": [
+                {
+                  "material_id": "3011",
+                  "item_id": 563,
+                  "pokeitem": "Steel Gem",
+                  "x": 1,
+                  "y": 1,
+                  "history_id": "",
+                  "old_member_savedata_id": 3280335,
+                  "pokemon_no": 585,
+                  "form_no": 2,
+                  "pokename": "Deerling",
+                  "pgl_name": "Mikey",
+                  "nickname": "Mikey",
+                  "poke_nickname": "Deerling",
+                  "field_line1": "A gem with an essence of steel. When",
+                  "field_line2": "held, it strengthens the power of a",
+                  "field_line3": "Steel-type move only once.",
+                  "created_at": "2026-07-29 19:45",
+                  "old_item_id": 563,
+                  "new_item_id": 563,
+                  "old_item_name": "Steel Gem"
+                }
+              ]
+        }
+
+        query = "INSERT OR IGNORE INTO player_saves (gscd, crop_data, chest_data, share_data) VALUES (?, ?, ?, ?)"
         with self._conn:
             self._conn.execute(query,
                                (str(gscd),
                                 json.dumps(empty_crop, indent=2),
-                                json.dumps(empty_chest, indent=2))
+                                json.dumps(empty_chest, indent=2),
+                                json.dumps(empty_share, indent=2))
                                 )
 
     def write(self, gscd: str, column: str, data: dict):
