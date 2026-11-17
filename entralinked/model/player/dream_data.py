@@ -1,31 +1,23 @@
-#!/usr/bin/env python3
+"""Data sent between the Dream World and the Gen5 games."""
 from dataclasses import dataclass
-from enum import Enum, auto
 
-class DreamAnimation(Enum):
-    LOOK_AROUND = 0
-    WALK_AROUND = auto()
-    WALK_LOOK_AROUND = auto()
-    WALK_VERTICALLY = auto()
-    WALK_HORIZONTALLY = auto()
-    WALK_LOOK_HORIZONTALLY = auto()
-    SPIN_RIGHT = auto()
-    SPIN_LEFT = auto()
-
-@dataclass
-class DreamDecor:
-    id: int
-    name: str
 
 @dataclass
 class DreamEncounter:
+    """A Pokémon waiting in the Entree Forest."""
+
     species: int
     move: int
     form: int
     gender: int
-    animation: DreamAnimation
+    # How it moves around: 0 look around, 1 walk around, 2 walk and look around, 3 walk
+    # vertically, 4 walk horizontally, 5 walk and look horizontally, 6 spin right, 7 spin left
+    animation: int
+
 
 @dataclass
 class DreamItem:
+    """A stack of items sent to the Entralink."""
+
     pokeitem_id: int
     item_cnt: int

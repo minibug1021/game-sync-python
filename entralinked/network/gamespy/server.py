@@ -1,43 +1,50 @@
-#!/usr/bin/env python3
+"""The GameSpy presence server (gpcm.gs.nintendowifi.net)."""
 import logging
 import socketserver
 import threading
 
-from network.gamespy.handler import GameSpyHandler
+from ...context import Context
+from .handler import GameSpyHandler
 
 logger = logging.getLogger(__name__)
 
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+GAMESPY_PORT = 29900  # fixed by the protocol
+
+
+class _ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
+    daemon_threads = True
+    context: Context
+
 
 class GameSpyServer:
-    def __init__(self, context, port: int = 29900):
+    """Listens for consoles and gives each connection its own GameSpyHandler thread."""
+
+    def __init__(self, context: Context, port: int = GAMESPY_PORT) -> None:
         self.context = context
-        
-        self.user_manager = self.context.user_manager
         self.port = port
-        self.server: ThreadedTCPServer = None
-        self.server_thread: threading.Thread = None
+        self.server: _ThreadedTCPServer | None = None
+        self.server_thread: threading.Thread | None = None
 
-    def start(self):
-        logger.info(f"Starting GameSpy TCP Server on port {self.port}...")
-        
-        self.server = ThreadedTCPServer(("0.0.0.0", self.port), GameSpyHandler)
-
+    def start(self) -> None:
+        """Start listening."""
+        self.server = _ThreadedTCPServer(("0.0.0.0", self.port), GameSpyHandler)
         self.server.context = self.context
 
         self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.server_thread.start()
-        
-        logger.info("GameSpy server started successfully.")
+        logger.info("GameSpy server listening @ port %d", self.port)
 
-    def stop(self):
-        if self.server:
-            logger.info("Shutting down GameSpy server...")
-            self.server.shutdown()
-            self.server.server_close()
-            
-            if self.server_thread:
-                self.server_thread.join()
-                
-            logger.info("GameSpy server stopped.")
+    def stop(self) -> None:
+        """Stop listening. Do nothing if the server isn't running."""
+        if self.server is None:
+            return
+
+        self.server.shutdown()
+        self.server.server_close()
+        if self.server_thread is not None:
+            self.server_thread.join()
+
+        self.server = None
+        self.server_thread = None
+        logger.info("GameSpy server stopped")

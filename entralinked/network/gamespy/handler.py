@@ -1,212 +1,175 @@
-#!/usr/bin/env python3
+"""A console's connection to the GameSpy server."""
+import hashlib
 import logging
 import secrets
-import hashlib
-import socket
 import socketserver
 
-from model.user.user import User
-from model.user.user_manager import UserManager
-from model.user.game_profile import GameProfile
-
-from network.gamespy.message import (
+from ...context import Context
+from ...model.user.game_profile import GameProfile
+from ...model.user.user import User
+from ...utility import credential_generator
+from .codec import TERMINATOR, decode_request, encode_message
+from .message import (
     GameSpyChallengeMessage,
     GameSpyErrorMessage,
     GameSpyLoginResponse,
-    GameSpyProfileResponse
+    GameSpyMessage,
+    GameSpyProfileResponse,
 )
-from network.gamespy.request import (
+from .request import (
     GameSpyLoginRequest,
+    GameSpyLogoutRequest,
     GameSpyProfileRequest,
-    GameSpyProfileUpdateRequest
+    GameSpyProfileUpdateRequest,
+    GameSpyRequest,
 )
-from utility.credential_generator import CredentialGenerator
-from network.gamespy.encoder_decoder import GameSpyMessageEncoder, GameSpyRequestDecoder
 
 logger = logging.getLogger(__name__)
 
+SERVICE = "gamespy"
+IDLE_TIMEOUT_SECONDS = 180.0
+SERVER_CHALLENGE_LENGTH = 10
+NO_SESSION = -1
+
+
+class GameSpyError:
+    """Error codes of the GameSpy presence protocol."""
+
+    INTERNAL = 0x100
+    INVALID_PARTNER_TOKEN = 0x200
+    INVALID_SESSION_KEY = 0x201
+    INVALID_RESPONSE = 0x202
+
+
+def create_credential_hash(challenge_hash: str, auth_token: str, first_challenge: str, second_challenge: str) -> str:
+    """Return the proof sent by either the console or the server."""
+    padding = " " * 48
+    raw = f"{challenge_hash}{padding}{auth_token}{first_challenge}{second_challenge}{challenge_hash}"
+    return hashlib.md5(raw.encode("UTF-8")).hexdigest()
+
+
 class GameSpyHandler(socketserver.BaseRequestHandler):
-    def setup(self):
-        self.user_manager: UserManager = self.server.context.user_manager
-        
-        self.server_challenge: str = None
-        self.session_key: int = -1
-        self.user: User = None
-        self.profile: GameProfile = None
+    """Handles one connection. socketserver creates one per console."""
 
-        self.decoder = GameSpyRequestDecoder()
-        self.encoder = GameSpyMessageEncoder()
+    def setup(self) -> None:
+        """Send the server's challenge."""
+        context: Context = self.server.context
+        self.user_manager = context.user_manager
 
-        logger.info("Sending GameSpy server challenge")
-        
-        self.server_challenge = CredentialGenerator.generate_challenge(10)
-        
+        self.session_key = NO_SESSION
+        self.user: User | None = None
+        self.profile: GameProfile | None = None
+
+        self.server_challenge = credential_generator.generate_challenge(SERVER_CHALLENGE_LENGTH)
         self.send_message(GameSpyChallengeMessage(self.server_challenge, 1))
 
-    def handle(self):
-        self.request.settimeout(180.0) 
-        
+    def handle(self) -> None:
+        """Read requests until the console disconnects or times out."""
+        self.request.settimeout(IDLE_TIMEOUT_SECONDS)
         buffer = bytearray()
-        delimiter = b"\\final\\"
-        
+
         try:
-            while True:
-                data = self.request.recv(512) 
-                
-                if not data:
-                    break
-                    
+            while data := self.request.recv(512):
                 buffer.extend(data)
-                
-                while delimiter in buffer:
-                    message_bytes, _, remaining_buffer = buffer.partition(delimiter)
-                    
-                    buffer = remaining_buffer
-                    
-                    full_message_bytes = message_bytes + delimiter
-                    
-                    request_obj = self.decoder.decode(full_message_bytes)
-                    if request_obj:
-                        request_obj.process(self)
 
-        except (ConnectionResetError, ConnectionAbortedError, socket.timeout):
-            user_id = self.user.get_redacted_id() if self.user else None
-            logger.info(f"User {user_id} timed out or connection was reset")
-        
-        except Exception as e:
-            logger.error("Exception caught in GameSpy handler", exc_info=e)
-            self.send_error_message(0x100, "An internal error occurred on the server.", 0, fatal=True)
-    
-    def finish(self):
-        user_id = self.user.get_redacted_id() if self.user else None
-        logger.info(f"User {user_id} disconnected from GameSpy server")
-        
-        self.server_challenge = None
-        self.session_key = -1
-        self.user = None
-        self.profile = None
+                while TERMINATOR in buffer:
+                    message, _, rest = buffer.partition(TERMINATOR)
+                    buffer = rest
+                    self.process(decode_request(bytes(message)))
 
-    def handle_login_request(self, req: GameSpyLoginRequest):
-        auth_token = req.authtoken
-        client_challenge = req.challenge
-        
-        session = self.user_manager.get_service_session(auth_token, "gamespy")
-        
-        if session is None:
-            logger.info("Rejecting GameSpy login request because the partner token is invalid")
-            self.send_error_message(0x200, "Invalid partner token.", req.id)
-            return
+        except (TimeoutError, ConnectionResetError, ConnectionAbortedError):
+            logger.info("User %s timed out or connection was reset", self._user_label())
 
-        partner_challenge_hash = session.challenge_hash
-        expected_response = self.create_credential_hash(
-            partner_challenge_hash, auth_token, client_challenge, self.server_challenge
-        )
-        
-        if expected_response != req.response:
-            logger.info("Rejecting GameSpy login request because the challenge response is invalid")
-            self.send_error_message(0x202, "Invalid response.", req.id)
-            return
+        except Exception:
+            logger.exception("Exception caught in GameSpy handler")
+            self.send_error(GameSpyError.INTERNAL, "An internal error occurred on the server.", fatal=True)
 
-        self.user = session.user
-        self.profile = self.user.get_profile(session.branch_code)
-        
-        if self.profile is None:
-            self.profile = self.user_manager.create_profile_for_user(self.user, session.branch_code)
-            
-            if self.profile is None:
-                self.send_error_message(0x203, "Profile creation failed due to an error.", req.id)
+    def finish(self) -> None:
+        """Clean up when the connection is over."""
+        logger.info("User %s disconnected from GameSpy server", self._user_label())
+
+    def _user_label(self) -> str | None:
+        return self.user.redacted_id if self.user else None
+
+    def process(self, request: GameSpyRequest) -> None:
+        """Check the session key if the request needs one, then act on the request."""
+        sequence_id = getattr(request, "id", 0)
+
+        if request.NEEDS_SESSION:
+            session_key = getattr(request, "sesskey", NO_SESSION)
+            if self.session_key == NO_SESSION or session_key != self.session_key:
+                self.send_error(GameSpyError.INVALID_SESSION_KEY, "Invalid session key.", sequence_id)
                 return
 
-        profile_id_override = self.user.profile_id_override
-        
-        if profile_id_override > 0:
-            self.profile.set_id(profile_id_override)
-            self.user.set_profile_id_override(0)
-            self.user_manager.save_user(self.user)
+        if isinstance(request, GameSpyLoginRequest):
+            self.handle_login(request)
+        elif isinstance(request, GameSpyLogoutRequest):
+            logger.info("User %s logged out", self._user_label())
+            self.session_key = NO_SESSION
+        elif isinstance(request, GameSpyProfileRequest):
+            self.handle_get_profile(request)
+        elif isinstance(request, GameSpyProfileUpdateRequest):
+            self.handle_update_profile(request)
+        # keep-alive and status requests need no answer
 
-        logger.info(f"User {self.user.get_redacted_id()} logged in with profile {self.profile.id}")
+    def handle_login(self, request: GameSpyLoginRequest) -> None:
+        """Verify the console's response and start a session."""
+        session = self.user_manager.get_service_session(request.authtoken, SERVICE)
 
-        self.session_key = secrets.randbits(31) 
-        proof = self.create_credential_hash(
-            partner_challenge_hash, auth_token, self.server_challenge, client_challenge
-        )
-        
-        self.send_message(GameSpyLoginResponse(
-            self.user.id,
-            self.profile.id, 
-            proof, 
-            self.session_key,
-            req.id
-        ))
+        if session is None or session.branch_code is None:
+            logger.info("Rejecting GameSpy login request because the partner token is invalid")
+            self.send_error(GameSpyError.INVALID_PARTNER_TOKEN, "Invalid partner token.", request.id)
+            return
 
-    def handle_profile_request(self, req: GameSpyProfileRequest):
+        expected_response = create_credential_hash(
+            session.challenge_hash, request.authtoken, request.challenge, self.server_challenge)
+
+        if expected_response != request.response:
+            logger.info("Rejecting GameSpy login request because the challenge response is invalid")
+            self.send_error(GameSpyError.INVALID_RESPONSE, "Invalid response.", request.id)
+            return
+
+        profile = self.user_manager.create_profile_for_user(session.user, session.branch_code)
+
+        self.user = session.user
+        self.profile = profile
+        self.session_key = secrets.randbits(31)
+        logger.info("User %s logged in with profile %s", self.user.redacted_id, profile.id)
+
+        proof = create_credential_hash(
+            session.challenge_hash, request.authtoken, self.server_challenge, request.challenge)
+        self.send_message(GameSpyLoginResponse(self.user.id, profile.id, proof, self.session_key, request.id))
+
+    def handle_get_profile(self, request: GameSpyProfileRequest) -> None:
+        """Send the logged-in profile."""
+        profile = self.profile
+        assert profile is not None
+
         self.send_message(GameSpyProfileResponse(
-            self.profile.id,
-            self.profile.first_name,
-            self.profile.last_name,
-            self.profile.aim_name,
-            self.profile.zip_code,
-            "signature",
-            req.id
-        ))
+            profile.id, profile.firstname, profile.lastname, profile.aim, profile.zipcode, "signature", request.id))
 
-    def handle_update_profile_request(self, req: GameSpyProfileUpdateRequest):
-        profile_changed = False
+    def handle_update_profile(self, request: GameSpyProfileUpdateRequest) -> None:
+        """Store the profile details the console sent, if any of them changed."""
+        profile, user = self.profile, self.user
+        assert profile is not None and user is not None
 
-        if req.firstname is not None and req.firstname != self.profile.first_name:
-            self.profile.first_name = req.firstname
-            profile_changed = True
-            
-        if req.lastname is not None and req.lastname != self.profile.last_name:
-            self.profile.last_name = req.lastname
-            profile_changed = True
-            
-        if req.aim is not None and req.aim != self.profile.aim_name:
-            self.profile.aim_name = req.aim
-            profile_changed = True
-            
-        if req.zipcode is not None and req.zipcode != self.profile.zip_code:
-            self.profile.zip_code = req.zipcode
-            profile_changed = True
+        changed = False
+        for name in ("firstname", "lastname", "aim", "zipcode"):
+            value = getattr(request, name)
+            if value is not None and value != getattr(profile, name):
+                setattr(profile, name, value)
+                changed = True
 
-        if profile_changed:
-            self.user_manager.save_user(self.user)
+        if changed:
+            self.user_manager.save_user(user)
 
-    def create_credential_hash(self, password_hash: str, user: str, in_challenge: str, out_challenge: str) -> str:
-        padding = " " * 48
-        raw_string = f"{password_hash}{padding}{user}{in_challenge}{out_challenge}{password_hash}"
-        return hashlib.md5(raw_string.encode("UTF-8")).hexdigest()
-
-    def handle_logout(self):
-        user_id = self.user.get_redacted_id() if self.user else None
-        profile_id = self.profile.id if self.profile else None
-        logger.info(f"User {user_id} logged out of profile {profile_id}")
-        self.session_key = -1
-
-    def validate_session_key(self, session_key: int, id: int = 0) -> bool:
-        if session_key < 0 or self.session_key != session_key:
-            self.send_error_message(0x201, "Invalid session key.", id)
-            return False
-        return True
-
-    def send_message(self, message: object):
+    def send_message(self, message: GameSpyMessage) -> None:
+        """Send a message."""
         try:
-            data_bytes = self.encoder.encode(message)
-            self.request.sendall(data_bytes)
-        except Exception as e:
-            logger.error(f"Failed to send message: {e}")
-
-    def send_error_message(self, error_code: int, error_message: str, id: int, fatal: bool = False):
-        self.send_message(GameSpyErrorMessage(
-            error_code, 
-            error_message, 
-            1 if fatal else 0, 
-            id
-        ))
-
-    def close(self):
-        try:
-            self.request.shutdown(socket.SHUT_RDWR)
-            self.request.close()
+            self.request.sendall(encode_message(message))
         except OSError:
-            pass
+            logger.exception("Failed to send GameSpy message")
+
+    def send_error(self, error_code: int, error_message: str, sequence_id: int = 0, fatal: bool = False) -> None:
+        """Send an error message."""
+        self.send_message(GameSpyErrorMessage(error_code, error_message, int(fatal), sequence_id))

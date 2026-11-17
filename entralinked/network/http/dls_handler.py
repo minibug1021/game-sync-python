@@ -1,137 +1,89 @@
-#!/usr/bin/env python3
+"""The download server (dls1.nintendowifi.net).
+
+The DS fetches skins and musicals from it after waking a Pokémon up.
+"""
 import logging
-
-import io
-import json
-from http import HTTPStatus
-from flask import request, Blueprint, g
 from dataclasses import dataclass
+from http import HTTPStatus
 
-from model.dlc.dlc import DlcList
-from model.user.user_manager import UserManager
-from utility.le_input_output import LEOutputStream
+from flask import Blueprint, request
+from flask.typing import ResponseReturnValue
+
+from ...context import Context
+from ...model.dlc.dlc import dlc_list_string
+from ...utility.url_encoded_form import decode_form
 
 logger = logging.getLogger(__name__)
 
+SERVICE = "dls1.nintendowifi.net"
 @dataclass
 class DlsRequest:
-    userid: str
-    passwd: str
-    macadr: str
     token: str
     action: str
+    dlc_type: str = ""  # attr1 without the language
+    language: str | None = None  # attr1's suffix
+    dlc_index: int | None = None  # attr2
+    dlc_name: str | None = None  # contents
 
-    rhgamecd: str = None
-    apinfo: str = None
-
-    gamecd: str = None
-    contents: str = None
-    attr1: str = None
-    attr2: int = None
-    offset: int = None
-    num: int = None
 
 class DlsHandler:
-    def __init__(self, context):
-        self.context = context
+    """Handles POST /download."""
 
-        self.dlc_list = self.context.dlc_list
-        self.user_manager = self.context.user_manager
+    def __init__(self, context: Context) -> None:
+        self.dlc_list = context.dlc_list
+        self.user_manager = context.user_manager
+        self._actions = {
+            "list": self.handle_retrieve_dlc_list,
+            "contents": self.handle_retrieve_dlc_content,
+        }
 
-    def add_handlers(self) -> Blueprint:
-        blueprint = Blueprint('dls', __name__)
-
-        @blueprint.post('/download')
-        def dls_post():
-            return self.handle_download_request()
-
+    def blueprint(self) -> Blueprint:
+        """Return the routes of this handler."""
+        blueprint = Blueprint("dls", __name__)
+        blueprint.add_url_rule("/download", view_func=self.handle_download_request, methods=["POST"])
         return blueprint
 
-    def handle_download_request(self):
-        req = json.loads(request.get_data(as_text=True).replace("%2A", "*"))
+    def handle_download_request(self) -> ResponseReturnValue:
+        """Handle a download server request."""
+        try:
+            form = decode_form(request.get_data(as_text=True))
+            dlc_type, _, language = form.get("attr1", "").partition("_")  # "CGEAR2_E"
+            dls_request = DlsRequest(
+                token=form["token"],
+                action=form["action"],
+                dlc_type=dlc_type,
+                language=language or None,
+                dlc_index=int(form["attr2"]) if form.get("attr2") else None,
+                dlc_name=form.get("contents"),
+            )
+        except (KeyError, ValueError):
+            logger.exception("Malformed DLS request")
+            return "", HTTPStatus.BAD_REQUEST
 
-        req = DlsRequest(
-            userid = req["userid"],
-            passwd = req["passwd"],
-            macadr = req["macadr"],
-            token = req["token"],
-            action = req["action"],
-            rhgamecd = req.get("rhgamecd"),
-            apinfo = req.get("apinfo"),
-            gamecd = req.get("gamecd"),
-            contents = req.get("contents"),
-            attr1 = req.get("attr1"),
-            attr2 = int(req["attr2"]) if "attr2" in req else None,
-            offset = int(req["offset"]) if "offset" in req else None,
-            num = int(req["num"]) if "num" in req else None
-        )
-        logger.debug(f"Received {req}")
-
-        session = self.user_manager.get_service_session(req.token, "dls1.nintendowifi.net")
+        logger.debug("Received %s", dls_request)
+        session = self.user_manager.get_service_session(dls_request.token, SERVICE)
 
         if session is None:
             logger.debug("Rejecting DLS request because the service session has expired")
-            return HTTPStatus.UNAUTHORIZED
+            return "", HTTPStatus.UNAUTHORIZED
 
-        g.session_user = session.user
-
-        handlers = {
-            "list": self.handle_retrieve_dlc_list,
-            "contents": self.handle_retrieve_dlc_content
-        }
-
-        handler = handlers.get(req.action)
+        handler = self._actions.get(dls_request.action)
 
         if handler is None:
-            logger.error(f"Invalid POST request type: {req.action}")
-            return HTTPStatus.BAD_REQUEST
+            logger.error("Invalid DLS request action: %s", dls_request.action)
+            return "", HTTPStatus.BAD_REQUEST
 
-        return handler(req)
+        return handler(dls_request)
 
-    def handle_retrieve_dlc_list(self, req: DlsRequest):
-        user = g.session_user
-        game_code = self.get_dlc_game_code(req.gamecd)
-        dlc_type = self.get_regionless_dlc_type(req.attr1)
+    def handle_retrieve_dlc_list(self, req: DlsRequest) -> ResponseReturnValue:
+        """List the DLC of a type."""
+        return dlc_list_string(self.dlc_list.get_dlc_list(req.dlc_type, req.language, req.dlc_index))
 
-        if user.has_dlc_override(dlc_type):
-            override = user.get_dlc_override(dlc_type)
-            result = self.dlc_list.get_dlc_list_string([override])
-            return result
-
-        return_list = self.dlc_list.get_dlc_list(game_code, dlc_type, req.attr2)
-        return self.dlc_list.get_dlc_list_string(return_list)
-
-    def handle_retrieve_dlc_content(self, req: DlsRequest):
-        user = g.session_user
-        game_code = self.get_dlc_game_code(req.gamecd)
-        dlc_type = self.get_regionless_dlc_type(req.attr1)
-
-        dlc = user.get_dlc_override(dlc_type) if user.has_dlc_override(dlc_type) else self.dlc_list.get_dlc(game_code, dlc_type, req.contents)
+    def handle_retrieve_dlc_content(self, req: DlsRequest) -> ResponseReturnValue:
+        """Send a DLC file."""
+        dlc = self.dlc_list.get_dlc(req.dlc_type, req.dlc_name, req.language)
 
         if dlc is None:
-            return HTTPStatus.NOT_FOUND
+            return "", HTTPStatus.NOT_FOUND
 
-        output = LEOutputStream(io.BytesIO())
-        with open(dlc.path, "rb") as input_stream:
-            output.write(input_stream.read())
-
-        if not dlc.checksum_embedded:
-            output.write_short(dlc.checksum)
-
-    def get_dlc_game_code(self, game_code: str):
-        if game_code in ("IRAJ", "IRAK"):
-            return "IRAO"
-        else:
-            return game_code
-
-    def get_regionless_dlc_type(self, dlc_type: str):
-        if dlc_type.startswith("CGEAR2"):
-            return "CGEAR2"
-        elif dlc_type.startswith("CGEAR"):
-            return "CGEAR"
-        elif dlc_type.startswith("ZUKAN"):
-            return "ZUKAN"
-        elif dlc_type.startswith("MUSICAL"):
-            return "MUSICAL"
-        else:
-            return dlc_type
+        return dlc.path.read_bytes()

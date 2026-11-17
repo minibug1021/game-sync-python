@@ -1,131 +1,116 @@
-#!/usr/bin/env python3
-import logging
-
-import re
-import json
-import random
+"""Nintendo WFC accounts and the sessions of logged-in consoles."""
 import hashlib
-from typing import Dict
+import logging
+import random
+import re
+import secrets
+import threading
 from dataclasses import asdict
 from datetime import datetime, timedelta
 
-from model.user.user import User
-from model.user.game_profile import GameProfile
-from model.user.service import ServiceCredentials, ServiceSession
-from utility.credential_generator import CredentialGenerator
-
-from entralinked.paths import ROOT_DIR
+from ...utility import credential_generator
+from ...utility.db_manager import db
+from .game_profile import GameProfile
+from .service import ServiceSession
+from .user import User
 
 logger = logging.getLogger(__name__)
 
+USER_ID_PATTERN = re.compile("[0-9]{13}")
+SESSION_LIFETIME = timedelta(minutes=30)
+AUTH_TOKEN_BYTES = 96
+CHALLENGE_LENGTH = 8
+MAX_PROFILE_ID = 2**31 - 1
+
+
+def is_valid_user_id(user_id: str) -> bool:
+    """Whether `user_id` looks like a WFC user id (13 digits)."""
+    return bool(USER_ID_PATTERN.fullmatch(user_id))
+
+
 class UserManager:
+    """Keep every user in memory and save changes to the database."""
 
-    user_id_pattern = re.compile("[0-9]{13}")
-    data_directory = ROOT_DIR / "save_data"
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.users: dict[str, User] = {}
+        self.service_sessions: dict[str, ServiceSession] = {}
 
-    def __init__(self):
-        self.users: Dict[str, User] = {}
-        self.service_sessions: Dict[str, ServiceSession] = {}
+        for data in db.get_all_wfc_users():
+            profiles = {branch_code: GameProfile(**profile) for branch_code, profile in data["profiles"].items()}
+            self.users[data["id"]] = User(data["id"], data["password"], profiles)
 
-        logger.info("Loading user and profile data ...")
+        logger.info("Loaded %d user(s)", len(self.users))
 
-        for file in self.data_directory.iterdir():
-            if "WFC" not in file.stem:
-                continue
-            self.load_user(file)
+    def save_user(self, user: User) -> None:
+        """Write a user and its profiles to the database."""
+        db.save_wfc_user(
+            user_id=user.id,
+            password=user.password,
+            profiles={branch_code: asdict(profile) for branch_code, profile in user.profiles.items()},
+        )
 
-        logger.info(f"Loaded {len(self.users)} user")
+    def does_user_exist(self, user_id: str) -> bool:
+        """Whether a user id is registered."""
+        return user_id in self.users
 
-    @staticmethod
-    def is_valid_user_id(id: str):
-        return bool(UserManager.user_id_pattern.fullmatch(id))
+    def register_user(self, user_id: str, password: str) -> User | None:
+        """Create a user. Return None if the id is taken."""
+        with self._lock:
+            if user_id in self.users:
+                logger.warning("Attempted to register user with duplicate ID: %s", user_id)
+                return None
 
-    def load_user(self, input_file):
-        with open(input_file, "r", encoding="UTF-8") as f:
-            data = json.load(f)
-
-        user = User(data["id"], data["password"])
-        for branch_code, profile_data in data.get("profiles", {}).items():
-            user.add_profile(branch_code, GameProfile(**profile_data))
-
-        self.users[user.id] = user
-
-    def save_users(self):
-        for user in self.users.values():
+            user = User(user_id, password)
             self.save_user(user)
+            self.users[user_id] = user
+            return user
 
-    def save_user(self, user: User):
-        user_data = {
-            "id": user.id,
-            "password": user.password,
-            "profiles": {k: asdict(v) for k, v in user.profiles.items()},
-            "dlcOverrides": {k: asdict(v) for k, v in user.dlc_overrides.items()},
-            "profileIdOverride": user.profile_id_override
-        }
+    def authenticate_user(self, user_id: str, password: str) -> User | None:
+        """Return the user with this id, if the password matches."""
+        user = self.users.get(user_id)
+        return user if user is not None and user.password == password else None
 
-        with open(self.data_directory / f"WFC-{user.id}.json", "w+") as f:
-            json.dump(user_data, f, indent=2, ensure_ascii=False)
+    def create_profile_for_user(self, user: User, branch_code: str) -> GameProfile:
+        """Return the user's profile, creating it if needed."""
+        with self._lock:
+            profile = user.profiles.get(branch_code)
+            if profile is None:
+                profile = GameProfile(random.randint(0, MAX_PROFILE_ID))
+                user.profiles[branch_code] = profile
+                self.save_user(user)
+            return profile
 
-        return True
+    def create_service_session(self, user: User, service: str, branch_code: str | None = None) -> tuple[str, str]:
+        """Let `user` log in to `service` for the next SESSION_LIFETIME.
 
-    def create_service_session(self, user: User, service: str, branch_code: str):
-        auth_token: str = "NDS" + CredentialGenerator.generate_auth_token(96)
-        raw_challenge: str = CredentialGenerator.generate_challenge(8)
+        Return the token and challenge to send to the console.
+        """
+        auth_token = "NDS" + secrets.token_urlsafe(AUTH_TOKEN_BYTES)
+        challenge = credential_generator.generate_challenge(CHALLENGE_LENGTH)
+        challenge_hash = hashlib.md5(challenge.encode("UTF-8")).hexdigest()
+        session = ServiceSession(user, service, branch_code, challenge_hash, datetime.now() + SESSION_LIFETIME)
 
-        challenge = hashlib.md5(raw_challenge.encode("UTF-8")).hexdigest()
+        with self._lock:
+            for token in [token for token, old in self.service_sessions.items() if old.has_expired()]:
+                del self.service_sessions[token]
+            self.service_sessions[auth_token] = session
 
-        expires_at = datetime.now() + timedelta(minutes=30)
+        return auth_token, challenge
 
-        session = ServiceSession(user, service, branch_code, challenge, expires_at)
-
-        self.service_sessions[auth_token] = session
-
-        return ServiceCredentials(auth_token, raw_challenge)
-
-    def get_service_session(self, auth_token: str, service: str):
-        session = self.service_sessions.get(auth_token)
-
-        if session is None:
+    def get_service_session(self, auth_token: str | None, service: str) -> ServiceSession | None:
+        """Return the token's session, if it is still valid and is for `service`."""
+        if auth_token is None:
             return None
 
-        if session.has_expired():
-            del self.service_sessions[auth_token]
-            return None
+        with self._lock:
+            session = self.service_sessions.get(auth_token)
+
+            if session is None:
+                return None
+
+            if session.has_expired():
+                del self.service_sessions[auth_token]
+                return None
 
         return session if session.service == service else None
-
-    def register_user(self, user_id: str, plain_password: str):
-        if user_id in self.users:
-            logger.warning(f"Attempted to register user with duplicate ID: {user_id}")
-
-        user = User(user_id, plain_password)
-
-        if not self.save_user(user):
-            return None
-
-        self.users[user_id] = user
-        return user
-
-    def authenticate_user(self, user_id: str, password: str):
-        user = self.users.get(user_id)
-        return None if user is None or user.password != password else user
-
-    def create_profile_for_user(self, user: User, branch_code: str):
-        if user.get_profile(branch_code) is not None:
-            logger.warning(f"Attempted to create duplicate profile {branch_code} in user {user.id}")
-
-        profile_id = random.randint(0, 2 ** 31 - 1)
-        profile = GameProfile(profile_id)
-        user.add_profile(branch_code, profile)
-
-        if not self.save_user(user):
-            user.remove_profile(branch_code)
-            return None
-
-        return profile
-
-    def does_user_exist(self, id: str):
-        return id in self.users
-
-    def get_users(self):
-        return self.users.values()

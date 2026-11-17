@@ -1,96 +1,91 @@
-#!/usr/bin/env python3
-from typing import ClassVar
+"""Requests a console sends to the GameSpy server."""
 from dataclasses import dataclass
+from typing import ClassVar
 
-class GameSpyKeepAliveRequest:
-    COMMAND: ClassVar[str] = "ka"
-
-    def process(self, handler):
-        pass
 
 @dataclass
-class GameSpyLoginRequest:
-    COMMAND: ClassVar[str] = "login"
+class GameSpyRequest:
+    """Base class of the requests the GameSpy server handles.
+
+    COMMAND is the first key of the message, and requests with NEEDS_SESSION are
+    only handled once the connection has logged in.
+    """
+
+    COMMAND: ClassVar[str]
+    NEEDS_SESSION: ClassVar[bool] = True
+
+
+@dataclass
+class GameSpyKeepAliveRequest(GameSpyRequest):
+    """Heartbeat request to keep the connection alive."""
+
+    COMMAND = "ka"
+    NEEDS_SESSION = False
+
+
+@dataclass
+class GameSpyLoginRequest(GameSpyRequest):
+    """Logs in with the token and challenge that NAS handed out."""
+
+    COMMAND = "login"
+    NEEDS_SESSION = False
 
     response: str
     challenge: str
     authtoken: str
     id: int
 
-    userid: str = None
-    gamename: str = None
-    profileid: int = None
-    namespaceid: int = None
-    partnerid: int = None
-    productid: int = None
-    sdkrevision: int = None
-    firewall: int = None
-    port: int = None
-    quiet: int = None
 
-    def process(self, handler):
-        return handler.handle_login_request(self)
-
-    def to_string(self):
-        return f"GameSpyLoginRequest[sequenceId={self.id}, gameName={self.gamename}, profileId={self.profileid}, namespaceId={self.namespaceid}, partnerId={self.partnerid}, productId={self.productid}, sdkRevision={self.sdkrevision}, firewall={self.firewall}, port={self.port}, quiet={self.quiet}]"
-    
 @dataclass
-class GameSpyLogoutRequest:
-    COMMAND: ClassVar[str] = "logout"
-    
+class GameSpyLogoutRequest(GameSpyRequest):
+    """Ends the session."""
+
+    COMMAND = "logout"
+
     sesskey: int
 
-    def process(self, handler):
-        if handler.validate_session_key(self.sesskey):
-            return handler.handle_logout()
 
-    def to_string(self):
-        return "GameSpyLogoutRequest[]"
-    
 @dataclass
-class GameSpyProfileRequest:
-    COMMAND: ClassVar[str] = "getprofile"
+class GameSpyProfileRequest(GameSpyRequest):
+    """Asks for the logged-in profile's details."""
+
+    COMMAND = "getprofile"
 
     sesskey: int
     id: int
-    profileid: int
 
-    def process(self, handler):
-        if handler.validate_session_key(self.sesskey, self.id):
-            return handler.handle_profile_request(self)
 
-    def to_string(self):
-        return f"GameSpyProfileRequest[sequenceId={self.id}, profileId={self.profileid}]"
-    
 @dataclass
-class GameSpyProfileUpdateRequest:
-    COMMAND: ClassVar[str] = "updatepro"
+class GameSpyProfileUpdateRequest(GameSpyRequest):
+    """Changes some of the logged-in profile's details."""
+
+    COMMAND = "updatepro"
 
     sesskey: int
-    partnerid: int
 
-    firstname: str = None
-    lastname: str = None
-    aim: str = None
-    zipcode: str = None
+    firstname: str | None = None
+    lastname: str | None = None
+    aim: str | None = None
+    zipcode: str | None = None
 
-    def process(self, handler):
-        if handler.validate_session_key(self.sesskey):
-            return handler.handle_update_profile_request(self)
 
-    def to_string(self):
-        return f"GameSpyProfileUpdateRequest[partnerId={self.partnerid}]"
-    
 @dataclass
-class GameSpyStatusRequest:
-    COMMAND: ClassVar[str] = "status"
+class GameSpyStatusRequest(GameSpyRequest):
+    """The console's online status."""
+
+    COMMAND = "status"
 
     sesskey: int
-    statstring: str = None
-    locstring: str = None
 
-    def process(self, handler):
-        return handler.validate_session_key(self.sesskey)
-    
-    def to_string(self):
-        return "GameSpyStatusRequest[]"
+
+REQUEST_TYPES: dict[str, type[GameSpyRequest]] = {
+    request_type.COMMAND: request_type
+    for request_type in (
+        GameSpyKeepAliveRequest,
+        GameSpyLoginRequest,
+        GameSpyLogoutRequest,
+        GameSpyProfileRequest,
+        GameSpyProfileUpdateRequest,
+        GameSpyStatusRequest,
+    )
+}

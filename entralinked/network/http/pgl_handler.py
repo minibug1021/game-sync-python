@@ -1,532 +1,447 @@
-#!/usr/bin/env python3
+"""The Global Link's gateway for the DS (`/dsio/gw` on en.pokemon-gl.com), which handles Game Sync."""
 import logging
-
-import io
-from typing import List, Tuple
-from pathlib import Path
-from random import sample
-from http import HTTPStatus
-from datetime import datetime
+import random
+import struct
+from collections.abc import Callable
 from dataclasses import dataclass
-from flask import request, Blueprint, g
+from datetime import datetime
+from enum import IntEnum
+from http import HTTPStatus
 
-from paths import ROOT_DIR
-from model.user.user import User
-from model.pkmn import extra_data
-from utility.db_manager import db
-from model.dlc.dlc import DlcList, Dlc
-from model.pkmn.pkmn_info import PkmnInfo
-from utility.gsid_utility import GsidUtility
-from model.user.user_manager import UserManager
-from model.avenue.avenue_data import AvenueVisitor
-from utility.le_input_output import LEOutputStream
-from model.pkmn.pkmn_reader import Pokemon, SaveFile
-from model.player.player_manager import PlayerManager
-from model.player.player import Medal, PlayerStatus, Player
-from model.player.dream_data import DreamDecor, DreamEncounter, DreamItem
+from flask import Blueprint, g, request
+from flask.typing import ResponseReturnValue
+
+from utils import save_data
+from utils.constants import PlayerStatus, is_b2w2
+from utils.language import LANGCODES
+
+from ...context import Context
+from ...model.avenue.avenue_data import AvenueVisitor
+from ...model.pkmn.pkmn_info import PkmnInfo, calculate_is_shiny
+from ...model.player.dream_data import DreamEncounter, DreamItem
+from ...model.player.player import Player
+from ...model.save_file import Pokemon, SaveFile, SaveFileError
+from ...paths import RAW_TEXT_DIR
+from ...utility import gsid_utility
+from ...utility.db_manager import db
 
 logger = logging.getLogger(__name__)
 
-lang_index = {
-    1: "ja",
-    2: "en",
-    3: "fr",
-    4: "it",
-    5: "de",
-    7: "es",
-    8: "ko"
-}
+SERVICE = "external"
+
+USERNAME = "pokemon"
+PASSWORD = "2Phfv9MY"
+
+HEADER_SIZE = 128
+DEFAULT_LANGUAGE = "en"
+
+# Fixed sizes of the data sent when a Pokémon wakes up
+MAX_ENCOUNTERS = 10
+ENCOUNTER_SIZE = 8
+MAX_ITEMS = 20
+LOBLOLLY_ITEM_NAME_SIZE = 24  # 12 UTF-16 characters
+MAX_VISITORS = 12
+VISITOR_SIZE = 32
+VISITOR_NAME_SIZE = 16
+
+# Loblolly offers these items. Their names are in raw_text/<language>/loblolly.txt.
+LOBLOLLY_ITEM_IDS = (1, 2, 3, 4, 6)
+
+
+SPECIES_COUNT = 649
+
+
+def _sleepy_bit_list() -> bytes:
+    """Return the species that may be tucked in, one bit per National Pokédex number."""
+    bit_list = bytearray(HEADER_SIZE)
+    for species in range(1, SPECIES_COUNT + 1):
+        bit_list[species // 8] |= 1 << (species % 8)
+    return bytes(bit_list)
+
+
+SLEEPY_BIT_LIST = _sleepy_bit_list()
+
+
+class PglStatus(IntEnum):
+    """The status code at the start of a response."""
+
+    OK = 0
+    UNAUTHORIZED = 1  # the Game Sync ID isn't registered
+    DUPLICATE_GAME_SYNC_ID = 2
+    REGISTRATION_ERROR = 3
+    SAVE_DATA_ERROR = 4  # the uploaded save couldn't be used
+    NO_SAVE_DATA = 5
+    INVALID_GAME_SYNC_ID = 8  # also makes the game offer to create an account
+    NOT_BLACK_OR_WHITE = 10
+
 
 @dataclass
 class PglRequest:
-    p: str
-    tok: str
-    gsid: str = None
-    rom: int = None
-    langcode: int = None
-    dreamw: int = None
+    """The query string of a request."""
 
-    def __post_init__(self):
-        if self.gsid is not None:
-            try:
-                self.gsid = GsidUtility.stringify_gamesync_id(int(self.gsid))
-            except ValueError:
-                pass
+    type: str  # p
+    token: str  # tok
+    gscd: str | None = None  # sent as the numeric gsid
+    rom: int | None = None
+    langcode: int | None = None
+
+
+# A handler returns the status and the data that follows the header
+Handler = Callable[[PglRequest], tuple[PglStatus, bytes]]
+
+
+def _optional_int(name: str) -> int | None:
+    return int(request.args[name]) if name in request.args else None
+
+
+def _language(language_code: int | None) -> str:
+    """Return the raw_text folder for a cartridge's language."""
+    if language_code is None:
+        return DEFAULT_LANGUAGE
+    return LANGCODES.get(language_code, DEFAULT_LANGUAGE)
+
+
+def _text_lines(language: str, name: str) -> list[str]:
+    return (RAW_TEXT_DIR / language / f"{name}.txt").read_text(encoding="UTF-8").splitlines()
+
+
+def _padded_name(name: str, max_name_bytes: int, field_size: int) -> bytes:
+    """Return a UTF-16 name cut to `max_name_bytes`, padded with 0xFF to `field_size` bytes."""
+    name_bytes = name.encode("UTF-16-LE")[:max_name_bytes]
+    return name_bytes + b"\xff" * (field_size - len(name_bytes))
+
+
+def _pkmn_info(pokemon: Pokemon) -> PkmnInfo:
+    type1, type2 = pokemon.types
+
+    return PkmnInfo(
+        pokemon_no=pokemon.natdex,
+        form_no=pokemon.form,
+        type1=type1,
+        type2=type2,
+        pokemon_nickname=pokemon.nickname,
+        oyaname=pokemon.trainer_name,
+        level=pokemon.level,
+        sex=pokemon.gender,
+        personality=pokemon.nature,
+        ball_name=pokemon.ball,
+        is_shiny=calculate_is_shiny(pokemon.trainer_id, pokemon.trainer_id_secret, pokemon.personality_value),
+    )
+
+
+def _encounters(encounters: list[DreamEncounter]) -> bytes:
+    """Entree Forest encounters, padded to MAX_ENCOUNTERS."""
+    encounters = encounters[:MAX_ENCOUNTERS]
+    data = b"".join(struct.pack("<HHBBBB", encounter.species, encounter.move, encounter.form, encounter.gender,
+                                encounter.animation, 0)
+                    for encounter in encounters)
+    return data + bytes((MAX_ENCOUNTERS - len(encounters)) * ENCOUNTER_SIZE)
+
+
+def _items(items: list[DreamItem]) -> bytes:
+    """MAX_ITEMS item ids, then MAX_ITEMS quantities."""
+    items = items[:MAX_ITEMS]
+    padding = MAX_ITEMS - len(items)
+    return (struct.pack(f"<{len(items)}H", *(item.pokeitem_id for item in items)) + bytes(padding * 2)
+            + bytes(item.item_cnt for item in items) + bytes(padding))
+
+
+def _loblolly_items(langcode: int | None) -> bytes:
+    """The five Loblolly items, in random order."""
+    names = _text_lines(_language(langcode), "loblolly")
+    return b"".join(struct.pack("<H", item_id) + _padded_name(names[item_id], LOBLOLLY_ITEM_NAME_SIZE,
+                                                              LOBLOLLY_ITEM_NAME_SIZE)
+                    for item_id in random.sample(LOBLOLLY_ITEM_IDS, len(LOBLOLLY_ITEM_IDS)))
+
+
+def _avenue_visitors(visitors: list[AvenueVisitor]) -> bytes:
+    """Join Avenue visitors, padded to MAX_VISITORS (Black 2 / White 2 only)."""
+    visitors = visitors[:MAX_VISITORS]
+    data = b""
+
+    for visitor in visitors:
+        visitor_type = visitor.trainer_class + visitor.personality * 8
+        data += _padded_name(visitor.name, VISITOR_NAME_SIZE - 2, VISITOR_NAME_SIZE)
+        data += struct.pack(
+            "<BBhiBBBBBBH",
+            visitor_type,
+            visitor.shop_type + (7 - visitor_type * 2 % 7),
+            0,
+            1,
+            visitor.country_code,
+            visitor.state_province_code,
+            visitor.game_language_code,
+            visitor.game_rom_code,  # affects the shop's stock
+            visitor.female,
+            0,
+            visitor.dreamer_species,
+        )
+
+    return data + bytes((MAX_VISITORS - len(visitors)) * VISITOR_SIZE) + struct.pack("<i", 0)
+
 
 class PglHandler:
-    """HTTP handler for requests made to `en.pokemon-gl.com`"""
+    """Handles GET and POST /dsio/gw."""
 
-    username = "pokemon"
-    password = "2Phfv9MY"
-    sleepy_list = set(range(1, 650))
+    def __init__(self, context: Context) -> None:
+        self.configuration = context.configuration
+        self.dlc_list = context.dlc_list
+        self.user_manager = context.user_manager
+        self.player_manager = context.player_manager
 
-    def __init__(self, context):
-        self.context = context
-
-        self.configuration = self.context.configuration
-        self.dlc_list = self.context.dlc_list
-        self.user_manager = self.context.user_manager
-        self.player_manager = self.context.player_manager
-
-    # -------------------
-    # Handlers
-    # -------------------
-
-    def add_handlers(self) -> Blueprint:
-        blueprint = Blueprint('pgl', __name__)
-
-        @blueprint.before_request
-        def before_request_hook():
-            return self.authorize_pgl_request()
-
-        @blueprint.get('/dsio/gw')
-        def pgl_get():
-            return self.handle_pgl_get_request()
-
-        @blueprint.post('/dsio/gw')
-        def pgl_post():
-            return self.handle_pgl_post_request()
-
-        return blueprint
-
-    def authorize_pgl_request(self):
-        """
-        BEFORE handler for `/dsio/gw` that serves to deserialize and authenticate
-        the request. The deserialized request will be stored in a context attribute
-        named `pgl_request` and may be retrieved by subsequent handlers.
-        """
-        credentials = request.authorization
-
-        if (credentials is None) or (credentials.username != PglHandler.username) or (credentials.password != PglHandler.password):
-            logger.debug("Rejecting PGL request because the auth credentials were incorrect")
-            return HTTPStatus.UNAUTHORIZED
-
-        req = PglRequest(
-            p = request.args["p"],
-            tok = request.args["tok"],
-            gsid = request.args.get("gsid"),
-            rom = int(request.args["rom"]) if "rom" in request.args else None,
-            langcode = int(request.args["langcode"]) if "langcode" in request.args else None,
-            dreamw = int(request.args["dreamw"]) if "dreamw" in request.args else None
-        )
-        logger.debug(f"Received {req}")
-
-        session = self.user_manager.get_service_session(req.tok, "external")
-
-        if session is None:
-            logger.debug("Rejecting PGL request because the service session has expired")
-            return HTTPStatus.UNAUTHORIZED
-
-        g.pgl_request = req
-        g.pgl_user = session.user
-
-    def handle_pgl_get_request(self):
-        req: PglRequest = g.pgl_request
-        buffer = io.BytesIO()
-        output = LEOutputStream(buffer)
-
-        handlers = {
+        self._get_handlers: dict[str, Handler] = {
             "sleepily.bitlist": self.handle_get_sleepy_list,
             "account.playstatus": self.handle_get_account_status,
             "savedata.download": self.handle_download_save_data,
-            "savedata.getbw": self.handle_memory_link
+            "savedata.getbw": self.handle_memory_link,
         }
-
-        handler = handlers.get(req.p)
-
-        if handler is None:
-            logger.error(f"Invalid GET request type: {req.p}")
-            return HTTPStatus.BAD_REQUEST
-
-        handler(req, output)
-        return buffer.getvalue(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
-
-    def handle_get_sleepy_list(self, req: PglRequest, output: LEOutputStream):
-
-        if not db.does_gsid_exists(req.gsid):
-            self.write_status_code(output, 1)
-            return
-
-        bit_list = bytearray(128)
-
-        for sleepy in self.sleepy_list:
-            byte_offset = sleepy // 8
-            bit_offset = sleepy % 8
-
-            bit_list[byte_offset] |= 1 << bit_offset
-
-        self.write_status_code(output, 0)
-        output.write(bit_list)
-
-    def handle_get_account_status(self, req: PglRequest, output: LEOutputStream):
-        player: Player = self.player_manager.load_player(req.gsid)
-
-        if player is None:
-            self.write_status_code(output, 8)
-            return
-
-        self.write_status_code(output, 0)
-        player_status = db.read(player.game_sync_id, "player_data")["member"]["play_status"]
-        output.write_short(player_status)
-
-    def handle_download_save_data(self, req: PglRequest, output: LEOutputStream):
-        player: Player = self.player_manager.load_player(req.gsid)
-        user = g.pgl_user
-
-        if player is None:
-            self.write_status_code(output, 1)
-            return
-
-        logger.info(f"Player {player.gsid} is downloading save data")
-
-        self.write_status_code(output, 0)
-
-        if player.status == PlayerStatus.AWAKE:
-            return
-
-        is_version_2 = True if player.rom_code in (22, 23) else False
-
-        decor_list = self._get_localized_decor(player.language_code)
-
-        self._write_dream_counter(output, player)
-        self._write_encounters(output, player.encounters)
-
-        output.write_short(player.levels_gained)
-        output.write(0)
-
-        self._write_dlc_indices(output, user, player, is_version_2)
-
-        output.write(0 if len(decor_list) == 0 else 1)
-        output.write(0)
-
-        self._write_items(output, player.items)
-        self._write_decor(output, decor_list)
-
-        output.write_short(0)
-
-        if is_version_2:
-            self._write_avenue_visitors(output, player.avenue_visitors)
-
-
-    def handle_memory_link(self, req: PglRequest, output: LEOutputStream):
-        if not GsidUtility.is_valid_gamesync_id(req.gsid):
-            self.write_status_code(output, 8)
-            return
-
-        player: Player = self.player_manager.load_player(req.gsid)
-        user = g.pgl_user
-
-        if player is None:
-            self.write_status_code(output, 8)
-            return
-
-        if player.rom_code == 0:
-            self.write_status_code(output, 5)
-            return
-
-        if player.rom_code in (22, 23):
-            self.write_status_code(output, 10)
-            return
-
-        if getattr(player, "raw_save_data", None) is None:
-            self.write_status_code(output, 5)
-            return
-
-        logger.info(f"User {user.get_redacted_id()} is Memory Linking with player {player.id}")
-
-        self.write_status_code(output, 0)
-
-        #output.write(player.raw_save_data)
-
-    def handle_pgl_post_request(self):
-        req = g.pgl_request
-        buffer = io.BytesIO()
-        output = LEOutputStream(buffer)
-
-        handlers = {
+        self._post_handlers: dict[str, Handler] = {
             "savedata.upload": self.handle_upload_save_data,
             "savedata.download.finish": self.handle_download_save_data_finish,
             "account.create.upload": self.handle_create_account,
-            "account.createdata": self.handle_create_data
+            "account.createdata": self.handle_create_data,
         }
 
-        handler = handlers.get(req.p)
+    def blueprint(self) -> Blueprint:
+        blueprint = Blueprint("pgl", __name__)
+        blueprint.before_request(self.authorize_pgl_request)
+        blueprint.add_url_rule("/dsio/gw", view_func=self.handle_pgl_request, methods=["GET", "POST"])
+        return blueprint
+
+    # -------------------
+    # Request handling
+    # -------------------
+
+    def authorize_pgl_request(self) -> ResponseReturnValue | None:
+        """Authorize a request.
+
+        Check the basic-auth login and the session token, and leave the parsed request
+        in `g.pgl_request`.
+        """
+        credentials = request.authorization
+
+        if credentials is None or credentials.username != USERNAME or credentials.password != PASSWORD:
+            logger.debug("Rejecting PGL request because the auth credentials were incorrect")
+            return "", HTTPStatus.UNAUTHORIZED
+
+        try:
+            gsid = _optional_int("gsid")
+            pgl_request = PglRequest(
+                type=request.args["p"],
+                token=request.args["tok"],
+                gscd=gsid_utility.gsid_to_gscd(gsid) if gsid is not None else None,
+                rom=_optional_int("rom"),
+                langcode=_optional_int("langcode"),
+            )
+        except (KeyError, ValueError):  # a parameter is missing or isn't a number
+            logger.exception("Malformed PGL request")
+            return "", HTTPStatus.BAD_REQUEST
+
+        logger.debug("Received %s", pgl_request)
+        session = self.user_manager.get_service_session(pgl_request.token, SERVICE)
+
+        if session is None:
+            logger.debug("Rejecting PGL request because the service session has expired")
+            return "", HTTPStatus.UNAUTHORIZED
+
+        g.pgl_request = pgl_request
+        return None
+
+    def handle_pgl_request(self) -> ResponseReturnValue:
+        """Hands the request to the handler of its type and sends what that wrote."""
+        pgl_request: PglRequest = g.pgl_request
+        handlers = self._get_handlers if request.method == "GET" else self._post_handlers
+        handler = handlers.get(pgl_request.type)
 
         if handler is None:
-            logger.error(f"Invalid POST request type: {req.p}")
-            return '', HTTPStatus.BAD_REQUEST
+            logger.error("Invalid %s request type: %s", request.method, pgl_request.type)
+            return "", HTTPStatus.BAD_REQUEST
 
-        handler(req, output)
-        return buffer.getvalue(), HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
+        status, payload = handler(pgl_request)
+        header = struct.pack("<i", status) + bytes(HEADER_SIZE - 4)
+        return header + payload, HTTPStatus.OK, {"Content-Type": "application/octet-stream"}
 
-    def handle_download_save_data_finish(self, req: PglRequest, output: LEOutputStream):
-        player: Player = self.player_manager.load_player(req.gsid)
+    # -------------------
+    # GET handlers
+    # -------------------
+
+    def handle_get_sleepy_list(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """`sleepily.bitlist`: which species may be tucked in."""
+        if req.gscd is None or not db.gscd_exists(req.gscd):
+            return PglStatus.UNAUTHORIZED, b""
+        return PglStatus.OK, SLEEPY_BIT_LIST
+
+    def handle_get_account_status(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """`account.playstatus`: whether a Pokémon is asleep, dreaming, or ready to wake."""
+        player = self.player_manager.load_player(req.gscd)
 
         if player is None:
-            self.write_status_code(output, 1)
-            return
+            return PglStatus.INVALID_GAME_SYNC_ID, b""
+        return PglStatus.OK, struct.pack("<h", player.play_status)
+
+    def handle_download_save_data(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """`savedata.download`: send everything the Pokémon brings back when it wakes up."""
+        player = self.player_manager.load_player(req.gscd)
+
+        if player is None:
+            return PglStatus.UNAUTHORIZED, b""
+
+        logger.info("Player %s is downloading save data", player.gscd)
+
+        if player.play_status == PlayerStatus.AWAKE:
+            return PglStatus.OK, b""
+
+        b2w2 = is_b2w2(player.rom_id)
+        member = db.read(player.gscd, "player_data")["member"]
+
+        # The game stores the tuck-in count and downloads nothing if it gets the same one
+        # twice.
+        data = struct.pack("<i", member["sleep_pokemon_count"]) + _encounters(player.encounters)
+        data += struct.pack(
+            "<hBBBBBB",
+            player.levels_gained,
+            0,
+            self.dlc_list.get_dlc_index("MUSICAL", player.musical),
+            self.dlc_list.get_dlc_index("CGEAR2" if b2w2 else "CGEAR", player.cgear_skin),
+            self.dlc_list.get_dlc_index("ZUKAN", player.dex_skin),
+            1,
+            0,  # must be zero
+        )
+        data += _items(player.items) + _loblolly_items(player.langcode)
+        data += struct.pack("<h", 0)
+
+        if b2w2:
+            data += _avenue_visitors(player.avenue_visitors)
+
+        return PglStatus.OK, data
+
+    def handle_memory_link(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """Handle `savedata.getbw`.
+
+        Black 2 / White 2 fetches a Black / White save this way.
+        """
+        player = self.player_manager.load_player(req.gscd)
+
+        if player is None:
+            return PglStatus.INVALID_GAME_SYNC_ID, b""
+        if is_b2w2(player.rom_id):
+            return PglStatus.NOT_BLACK_OR_WHITE, b""
+        return PglStatus.NO_SAVE_DATA, b""
+
+    # -------------------
+    # POST handlers
+    # -------------------
+
+    def handle_download_save_data_finish(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """`savedata.download.finish`: the DS has saved what it downloaded."""
+        player = self.player_manager.load_player(req.gscd)
+
+        if player is None:
+            return PglStatus.UNAUTHORIZED, b""
+
+        save_data.update_member({"is_downloaded": 1}, player.gscd)
 
         if self.configuration.clear_player_dream_info_on_wake:
             player.reset_dream_info()
+            self.player_manager.save_player(player)
 
-            if not self.player_manager.save_player(player):
-                logger.warning(f"Save data failure for player {player.game_sync_id}")
-                return HTTPStatus.INTERNAL_SERVER_ERROR
+        return PglStatus.OK, b""
 
-        self.write_status_code(output, 0)
-
-    def handle_upload_save_data(self, req: PglRequest, output: LEOutputStream):
-        player: Player = self.player_manager.load_player(req.gsid)
+    def handle_upload_save_data(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """`savedata.upload`: tuck a Pokémon in."""
+        player = self.player_manager.load_player(req.gscd)
 
         if player is None:
-            request.stream.read()
-            self.write_status_code(output, 1)
-            return
+            return PglStatus.UNAUTHORIZED, b""
 
-        logger.info(f"Player {player.game_sync_id} is uploading save data")
+        logger.info("Player %s is uploading save data", player.gscd)
 
-        if player.status != PlayerStatus.AWAKE:
-            logger.warning(f"Player {player.game_sync_id} is not AWAKE -- existing dream information will be overwritten!")
+        if player.play_status != PlayerStatus.AWAKE:
+            logger.warning("Player %s is not AWAKE -- existing dream information will be overwritten!", player.gscd)
 
-        if (player.rom_code != 0) and (req.rom != player.rom_code):
-            logger.warning(f"Player {player.game_sync_id}'s game version changed from {player.rom_code} to {req.rom}")
+        try:
+            save = SaveFile(request.get_data())
+            trainer = save.trainer
+            pokemon = save.global_link.pokemon
 
-        # loading save data
-        save_data_bytes = request.get_data()
-        save_stream = io.BytesIO(save_data_bytes)
-        save = SaveFile(save_stream)
+            if pokemon is None:
+                raise SaveFileError("No Pokémon is tucked in")
 
-        # processing trainer data
-        trainer_data = save.trainer()
+            dreamer_info = _pkmn_info(pokemon)
+            rom_id = req.rom if req.rom is not None else trainer.game
+            langcode = req.langcode if req.langcode is not None else trainer.language
+            medals, favorite_medal = [], None
+            if is_b2w2(rom_id):
+                medals, favorite_medal = save.medals.medal_list, save.medals.favorite_medal
+        except (SaveFileError, IndexError, ValueError):
+            logger.exception("Could not read the save data uploaded by player %s", player.gscd)
+            return PglStatus.SAVE_DATA_ERROR, b""
 
-        player.name = trainer_data.name
-        player.country_id = trainer_data.country_id
-        player.num_badges = trainer_data.num_badges
+        if player.rom_id is not None and rom_id != player.rom_id:
+            logger.warning("Player %s's game version changed from %s to %s", player.gscd, player.rom_id, rom_id)
 
-        player.played_hours = trainer_data.played_hours
-        player.played_minutes = trainer_data.played_minutes
+        player.player_name = trainer.name
+        player.country = trainer.country
+        player.region = trainer.region
+        player.trainer_gender = trainer.gender
+        player.player_badge_num = save.num_badges
+        player.hours_played = trainer.played_hours
+        player.minutes_played = trainer.played_minutes
+        player.loblolly_decor = save.global_link.loblolly_decor
 
-        player.loblolly_decor = trainer_data.loblolly_decor
+        player.play_status = PlayerStatus.PLAY_READY
+        player.rom_id = rom_id
+        player.langcode = langcode
+        player.dreamer_info = dreamer_info
+        player.medals = medals
+        player.favorite_medal = favorite_medal
 
-        player.status = PlayerStatus.SLEEPING
-        player.rom_code = req.rom
-        player.language_code = req.langcode
-        player.dreamer_info = self._extract_dreamer_info(save)
+        self.player_manager.save_player(player)
+        self._record_tuck_in(player)
+        return PglStatus.OK, b""
 
-        is_version_2 = True if player.rom_code in (22, 23) else False
+    def handle_create_account(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """`account.create.upload`: registers the Game Sync ID in the query string."""
+        return self._register(req.gscd, req.rom, req.langcode), b""
 
-        if is_version_2:
-            player.medals = self._get_localized_medals(save, player.language_code)
-
-        if not self.player_manager.save_player(player):
-            logger.warning(f"Save data failure for player {player.game_sync_id}")
-            return HTTPStatus.INTERNAL_SERVER_ERROR
-
-        self._update_dream_db_entry(player)
-
-        self.write_status_code(output, 0)
-
-    def handle_create_account(self, req: PglRequest, output: LEOutputStream):
-        if not GsidUtility.is_valid_gamesync_id(req.gsid):
-            self.write_status_code(output, 8)
-            return
-
-        if db.does_gsid_exists(req.gsid):
-            self.write_status_code(output, 2)
-            return
-
-        player = self.player_manager.register_player(req.gsid, req.rom, req.langcode)
-
-        if player is None:
-            self.write_status_code(output, 3)
-            return
-
-        self.write_status_code(output, 0)
-
-    def handle_create_data(self, req: PglRequest, output: LEOutputStream):
+    def handle_create_data(self, req: PglRequest) -> tuple[PglStatus, bytes]:
+        """`account.createdata`: registers the Game Sync ID in the body."""
         raw_body = request.get_data(as_text=True).replace("\u0000", "")
-        game_sync_id = GsidUtility.stringify_gamesync_id(int(raw_body))
 
-        if not GsidUtility.is_valid_gamesync_id(game_sync_id):
-            logger.debug(f"[account.createdata] Rejecting invalid Game Sync ID: {game_sync_id} ({raw_body})")
-            self.write_status_code(output, 8)
-            return
+        try:
+            gscd = gsid_utility.gsid_to_gscd(int(raw_body))
+        except ValueError:
+            logger.debug("[account.createdata] Rejecting invalid Game Sync ID: %s", raw_body)
+            return PglStatus.INVALID_GAME_SYNC_ID, b""
 
-        if db.does_gsid_exists(game_sync_id):
-            self.write_status_code(output, 2)
-            return
+        return self._register(gscd, None, None), b""
 
-        if self.player_manager.register_player(game_sync_id, None, None) is None:
-            self.write_status_code(output, 3)
-            return
-
-        self.write_status_code(output, 0)
-
-    # -------------------
-    # Private helpers
-    # -------------------
-
-    def _write_dream_counter(self, output: LEOutputStream, player: Player) -> None:
-        """Writes a 4-byte integer used as a counter for total tuck-ins."""
-
-        sleep_pokemon_count = db.read(player.game_sync_id, "player_data")["member"]["sleep_pokemon_count"]
-        output.write_int(sleep_pokemon_count)
-
-    def _write_encounters(self, output: LEOutputStream, encounters: List[DreamEncounter]) -> None:
-        """Writes up to 10 Entree Forest encounters."""
-
-        for encounter in encounters:
-            output.write_short(encounter.species)
-            output.write_short(encounter.move)
-            output.write(encounter.form)
-            output.write(encounter.gender)
-            output.write(encounter.animation.value)
-            output.write(0)
-
-        output.write_bytes(0, (10 - len(encounters)) * 8)
-
-    def _write_dlc_indices(self, output: LEOutputStream, user: User, player: Player, is_version_2: bool) -> None:
-        """Writes DLC indices for musical, C-Gear skin, and Pokédex skin."""
-        output.write(self.get_dlc_index(user, player.musical, "MUSICAL", player.get_file("musical.bin")))
-        output.write(self.get_dlc_index(user, player.cgear_skin, "CGEAR2" if is_version_2 else "CGEAR", player.get_file("cgear.bin")))
-        output.write(self.get_dlc_index(user, player.dex_skin, "ZUKAN", player.get_file("zukan.bin")))
-
-    def _write_items(self, output: LEOutputStream, items: List[DreamItem]) -> None:
-        """Writes up to 20 item IDs followed by up to 20 item quantities."""
-        for item in items:
-            output.write_short(item.pokeitem_id)
-
-        output.write_bytes(0, (20 - len(items)) * 2)
-
-        for item in items:
-            output.write(item.item_cnt)
-
-        output.write_bytes(0, (20 - len(items)))
-
-    def _write_decor(self, output: LEOutputStream, decor_list: List[DreamDecor]) -> None:
-        """Writes up to 5 Decor entries. Missing entries use 0x7E."""
-        for decor in decor_list:
-            output.write_short(decor.id)
-
-            name_bytes = decor.name.encode("UTF-16-LE")
-
-            output.write(name_bytes, 0, min(len(name_bytes), 24))
-            output.write_bytes(-1, 24 - len(name_bytes))
-
-        for _ in range(5 - len(decor_list)):
-            output.write_short(0x7E)
-            output.write_bytes(0, 24)
-
-    def _write_avenue_visitors(self, output: LEOutputStream, visitors: List[AvenueVisitor]) -> None:
-        """For Black 2/White 2 only: writes up to 12 Join Avenue visitors."""
-
-        for visitor in visitors:
-            name_bytes = visitor.name.encode("UTF-16-LE")
-            output.write(name_bytes, 0, min(14, len(name_bytes)))
-            output.write_bytes(-1, 16 - len(name_bytes))
-
-            visitor_type = visitor.type.client_id + visitor.personality * 8
-            output.write(visitor_type)
-            output.write(visitor.shop_type.value + (7 - visitor_type * 2 % 7))
-
-            output.write_short(0)
-            output.write_int(1)
-            output.write(visitor.country_code)
-            output.write(visitor.state_province_code)
-            output.write(visitor.game_language_code)
-            output.write(visitor.game_rom_code)
-            output.write(1 if visitor.type.female else 0)
-            output.write(0)
-            output.write_short(visitor.dreamer_species)
-
-        output.write_bytes(0, (12 - len(visitors)) * 32)
-        output.write_int(0)
-
-    def _extract_dreamer_info(self, save: SaveFile) -> PkmnInfo:
-        """Extracts the tucked-in Pokémon data from the save file."""
-        pkmn_data = save.get_dreamer_pokemon()
-
-        dreamer_info = PkmnInfo(
-            pokemon_no        = pkmn_data.natdex,
-            form_no           = pkmn_data.form,
-            type1             = pkmn_data.type1,
-            type2             = pkmn_data.type2,
-            pokemon_nickname  = pkmn_data.nickname,
-            oyaname           = pkmn_data.trainer_name,
-            level             = pkmn_data.level,
-            sex               = pkmn_data.gender,
-            personality       = pkmn_data.nature,
-            ball_name         = pkmn_data.ball,
-            trainer_id        = pkmn_data.trainer_id,
-            trainer_secret_id = pkmn_data.trainer_id_secret
-        )
-
-        return dreamer_info
-
-
-    def _update_dream_db_entry(self, player: Player) -> None:
-        """Updates the database record for this session."""
-
-        now_local = datetime.now().astimezone()
-
-        p = db.read(player.game_sync_id, "player_data")
-
-        p["member"].update({
-            "sleeping_flag":            1,
-            "sleep_pokemon_count":      p["member"]["sleep_pokemon_count"] + 1,
-            "pdw_copied_at":            now_local.strftime("%Y-%m-%d %H:%M:%S"),
-            "last_up_time":             now_local.strftime("%m/%d/%y %H:%M"),
-            "last_up_time_strict":      now_local.strftime("%Y-%m-%d %H:%M:%S"),
-            "last_started_at_timezone": int(now_local.timestamp()),
-        })
-
-        db.write(player.game_sync_id, "player_data", p)
+    def _register(self, gscd: str | None, rom_id: int | None, langcode: int | None) -> PglStatus:
+        if gscd is None or not gsid_utility.is_valid_gscd(gscd):
+            return PglStatus.INVALID_GAME_SYNC_ID
+        if db.gscd_exists(gscd):
+            return PglStatus.DUPLICATE_GAME_SYNC_ID
+        self.player_manager.register_player(gscd, rom_id, langcode)
+        return PglStatus.OK
 
     # -------------------
-    # Utility
+    # Tuck-in data
     # -------------------
 
-    def _get_localized_medals(self, save: SaveFile, player_lang: str) -> List[Medal]:
-        """Generates a list of the obtained Medals, localized to the player's cart language."""
-        medal_list = []
+    def _record_tuck_in(self, player: Player) -> None:
+        """Update the member fields that the Dream World server keeps about a tuck-in."""
+        now = save_data.now_jst_str()
+        timestamp = int(datetime.now().timestamp())
 
-        with open(ROOT_DIR / "raw_text" / lang_index[player_lang] / "medal.txt", "r", encoding = "UTF-8") as f:
-            medal_names = f.read().splitlines()
+        def mark_tucked_in(member: dict) -> None:
+            member.update({
+                "sleeping_flag":            1,
+                "is_downloaded":            0,
+                "is_initializing":          0,
+                "sleep_pokemon_count":      member.get("sleep_pokemon_count", 0) + 1,
+                "pdw_copied_at":            now,
+                "last_up_time_strict":      now,
+                "last_started_at_timezone": timestamp,
+            })
 
-        medal_data = save.medal()
-        for medal_id in medal_data.medal_list:
-            medal = Medal(medal_id, medal_names[medal_id], False)
-            if medal_data.favorite_medal == medal_id:
-                medal.is_recommend = True
-
-            medal_list.append(medal)
-
-        return medal_list
-
-
-    def _get_localized_decor(self, player_lang: str) -> List[DreamDecor]:
-        """Generates a list of the 5 Loblolly Decor, localized to the player's cart language."""
-        decor_list = []
-
-        with open(ROOT_DIR / "raw_text" / lang_index[player_lang] / "decor.txt", "r", encoding = "UTF-8") as f:
-            decor_names = f.read().splitlines()
-
-        for decor_id in sample([1, 2, 3, 4, 6], 5):
-            decor = DreamDecor(decor_id, decor_names[decor_id])
-            decor_list.append(decor)
-
-        return decor_list
-
-    def write_status_code(self, output: LEOutputStream, status: int):
-        output.write_int(status)
-        output.write_bytes(0, 124)
-
-    def get_dlc_index(self, user: User, name: str, type: str, custom_file: Path):
-        if name == "custom":
-            user.set_dlc_override(type, Dlc(custom_file.absolute(),
-                                            name, "IRAO", type, 1,
-                                            custom_file.stat().st_size, 0, True))
-            return 1
-        else:
-            user.remove_dlc_override(type)
-            return self.dlc_list.get_dlc_index("IRAO", type, name)
+        save_data.change_member(mark_tucked_in, player.gscd)

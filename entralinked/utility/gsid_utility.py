@@ -1,43 +1,49 @@
-#!/usr/bin/env python3
-from utility import crc16
+"""Game Sync IDs."""
+import binascii
 
-class GsidUtility:
+GSCD_CHARTABLE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+GSCD_LENGTH = 10
+BITS_PER_CHAR = 5
+MAX_GSID = 0x7FFFFFFF
 
-    GSID_CHARTABLE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
-    @staticmethod
-    def stringify_gamesync_id(gsid: int):
-        output = []
+def _checksum(gsid: int) -> int:
+    return binascii.crc_hqx(gsid.to_bytes(4, "little"), 0xFFFF)
 
-        checksum = crc16.calc(gsid)
-        ugsid = gsid | (checksum << 32)
 
-        for i in range(10):
-            index = ((ugsid >> (5 * i)) & 0x1F)
-            output.append(GsidUtility.GSID_CHARTABLE[index])
+def gsid_to_gscd(gsid: int) -> str:
+    """Return the ten-character form of a numeric Game Sync ID."""
+    value = gsid | (_checksum(gsid) << 32)
+    return "".join(GSCD_CHARTABLE[(value >> (BITS_PER_CHAR * i)) & 0x1F] for i in range(GSCD_LENGTH))
 
-        return ''.join(output)
 
-    @staticmethod
-    def is_valid_gamesync_id(gsid: str):
-        if gsid is None:
-            return False
+def _decode(gscd: str) -> int:
+    """Decode a gscd to a number.
 
-        length = len(gsid)
-        ugsid = 0
+    The gsid is in the low 32 bits, then the checksum. Raise ValueError for a
+    character outside the table.
+    """
+    value = 0
+    for i, char in enumerate(gscd):
+        value |= GSCD_CHARTABLE.index(char) << (BITS_PER_CHAR * i)
+    return value
 
-        if length != 10:
-            return False
 
-        for i, char in enumerate(gsid):
-            index = GsidUtility.GSID_CHARTABLE.find(char)
+def gscd_to_gsid(gscd: str) -> int:
+    """Return the numeric Game Sync ID in a gscd."""
+    return _decode(gscd) & 0xFFFFFFFF
 
-            if index == -1:
-                return False
 
-            ugsid |= index << (5 * i)
+def is_valid_gscd(gscd: str | None) -> bool:
+    """Whether `gscd` is ten valid characters with a matching checksum."""
+    if gscd is None or len(gscd) != GSCD_LENGTH:
+        return False
 
-        output = ugsid & 0xFFFFFFFF
-        checksum = ((ugsid >> 32) & 0xFFFF)
+    try:
+        value = _decode(gscd)
+    except ValueError:
+        return False
 
-        return output < 0x80000000 and crc16.calc(output) == checksum
+    gsid = value & 0xFFFFFFFF
+    checksum = (value >> 32) & 0xFFFF
+    return gsid <= MAX_GSID and _checksum(gsid) == checksum

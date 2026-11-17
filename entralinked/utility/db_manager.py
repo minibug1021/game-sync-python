@@ -1,130 +1,142 @@
-import os
+"""The database both servers share."""
 import json
 import sqlite3
-import threading
-from pathlib import Path
-from itertools import product
+from collections.abc import Callable
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent.parent
+from ..model.player.starting_save import STARTING_PLOTS, starting_chest, starting_garden
+from ..paths import SAVE_DIR
+from .sqlite_store import SQLiteStore
 
-def fix_ownership(path):
-    uid = os.environ.get("SUDO_UID")
-    gid = os.environ.get("SUDO_GID")
 
-    if uid and gid:
-        os.chown(path, int(uid), int(gid))
+def _to_json(data: object) -> str:
+    return json.dumps(data, indent=2, ensure_ascii=False)
 
-class DBManager:
-    def __init__(self, db_path: Path):
-        self._db_path = db_path
-        self._local = threading.local()
 
-        conn = self._make_conn()
+class DBManager(SQLiteStore):
+    """Reads and writes player saves (keyed by gscd) and Nintendo WFC users."""
 
-        with conn:
-            conn.execute("""
-                CREATE TABLE IF NOT EXISTS player_saves (
-                    gscd TEXT PRIMARY KEY,
-                    player_data TEXT,
-                    sleeping_pokemon TEXT,
-                    game_sync TEXT,
-                    crop_data TEXT,
-                    chest_data TEXT
-                )""")
+    SCHEMA = (
+        """
+        CREATE TABLE IF NOT EXISTS player_saves (
+            gscd TEXT PRIMARY KEY,
+            player_data TEXT,
+            sleeping_pokemon TEXT,
+            game_sync TEXT,
+            crop_data TEXT,
+            chest_data TEXT
+        )""",
+        """
+        CREATE TABLE IF NOT EXISTS wfc_users (
+            user_id TEXT PRIMARY KEY,
+            password TEXT NOT NULL,
+            profiles TEXT
+        )""",
+        """
+        CREATE TABLE IF NOT EXISTS id_counters (
+            name TEXT PRIMARY KEY,
+            last_id INTEGER NOT NULL
+        )""",
+    )
+    # Global id sequences
+    ID_COUNTERS = frozenset({"member_id", "my_croft_id", "my_interior_id"})
+    COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "crop_data", "chest_data"})
 
-        fix_ownership(self._db_path)
-
-        conn.close()
-
-    def _make_conn(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path, timeout=10.0)
-
-        conn.execute("PRAGMA journal_mode=WAL;")
-        conn.execute("PRAGMA synchronous=NORMAL;")
-
-        conn.row_factory = sqlite3.Row
-
-        return conn
-
-    @property
-    def _conn(self) -> sqlite3.Connection:
-        if not hasattr(self._local, "conn") or self._local.conn is None:
-            self._local.conn = self._make_conn()
-        return self._local.conn
-
-    def _validate_column(self, column: str):
-        valid_columns = [
-            "player_data", "sleeping_pokemon", "game_sync",
-            "wfc_profile", "crop_data", "chest_data"
-        ]
-        if column not in valid_columns:
+    def _validate_column(self, column: str) -> None:
+        if column not in self.COLUMNS:
             raise ValueError(f"Invalid column name: '{column}'")
 
-    def write_gscd(self, gscd: str):
-        empty_crop = {
-            "croft_list": [
-                {
-                    "my_croft_id": 1000 + i,
-                    "x": x + 1,
-                    "y": y + 1,
-                }
-                for i, (y, x) in enumerate(product(range(2), range(3)))
-            ],
-            "diglett_flag": 0,
-        }
+    # ------------
+    # id counters
+    # ------------
 
-        empty_chest = {
-            "cnt": 64,
-            "list": [
-                {
-                    "pokeitem_id": berry_id + 148,
-                    "item_cnt": 99,
-                    "date": "2000-01-01"
-                }
-                for berry_id in range(1, 65)
-            ]
-        }
+    def next_id(self, name: str, count: int = 1) -> list[int]:
+        """Reserve `count` new ids from the global `name` sequence.
 
-        query = "INSERT OR IGNORE INTO player_saves (gscd, crop_data, chest_data) VALUES (?, ?, ?)"
+        Ids only ever go up and are never reused. Each name has its own sequence, which
+        every player shares.
+        """
+        if name not in self.ID_COUNTERS:
+            raise ValueError(f"Invalid id counter: '{name}'")
         with self._conn:
-            self._conn.execute(query,
-                               (str(gscd),
-                                json.dumps(empty_crop, indent=2),
-                                json.dumps(empty_chest, indent=2))
-                                )
+            return self._next_id(self._conn, name, count)
 
-    def write(self, gscd: str, column: str, data: dict):
-        self._validate_column(column)
+    @staticmethod
+    def _next_id(conn: sqlite3.Connection, name: str, count: int) -> list[int]:
+        last_id = conn.execute(
+            """INSERT INTO id_counters (name, last_id) VALUES (?, ?)
+               ON CONFLICT(name) DO UPDATE SET last_id = last_id + excluded.last_id
+               RETURNING last_id""",
+            (name, count),
+        ).fetchone()[0]
+        return list(range(last_id - count + 1, last_id + 1))
+
+    # -------------
+    # player saves
+    # -------------
+
+    def write_gscd(self, gscd: str) -> None:
+        """Create the row of a new Game Sync ID, with its starting garden and chest.
+
+        Do nothing if the row exists.
+        """
+        conn = self._conn
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            if conn.execute("SELECT 1 FROM player_saves WHERE gscd = ?", (gscd,)).fetchone():
+                return
+            croft_ids = self._next_id(conn, "my_croft_id", STARTING_PLOTS)
+            conn.execute(
+                "INSERT INTO player_saves (gscd, crop_data, chest_data) VALUES (?, ?, ?)",
+                (gscd, _to_json(starting_garden(croft_ids)), _to_json(starting_chest())),
+            )
+
+    def gscd_exists(self, gscd: str) -> bool:
+        """Whether a Game Sync ID has a row."""
+        return self._conn.execute("SELECT 1 FROM player_saves WHERE gscd = ?", (gscd,)).fetchone() is not None
+
+    def get_all_gscds(self) -> list[str]:
+        """Every Game Sync ID with a row."""
+        return [row["gscd"] for row in self._conn.execute("SELECT gscd FROM player_saves")]
+
+    def _upsert(self, conn: sqlite3.Connection, gscd: str, column: str, data: dict | None) -> None:
         query = f"""
             INSERT INTO player_saves (gscd, {column})
             VALUES (?, ?)
             ON CONFLICT(gscd) DO UPDATE SET {column} = excluded.{column};
         """
+        conn.execute(query, (gscd, None if data is None else _to_json(data)))
+
+    def write(self, gscd: str, column: str, data: dict | None) -> None:
+        """Replace one column of a save (None empties it)."""
+        self._validate_column(column)
         with self._conn:
-            if data is None:
-                self._conn.execute(query, (str(gscd), None))
-            else:
-                self._conn.execute(query, (str(gscd), json.dumps(data, indent=2, ensure_ascii=False)))
+            self._upsert(self._conn, gscd, column, data)
 
     def read(self, gscd: str, column: str) -> dict | None:
+        """One column of a save. None if the row or the column is empty."""
         self._validate_column(column)
+        row = self._conn.execute(f"SELECT {column} FROM player_saves WHERE gscd = ?", (gscd,)).fetchone()
+        return json.loads(row[column]) if row and row[column] else None
 
-        query = f"SELECT {column} FROM player_saves WHERE gscd = ?"
+    def update(self, gscd: str, column: str, change: Callable[[dict], None]) -> dict:
+        """Read, modify, and write one column in a single write transaction.
 
-        cursor = self._conn.execute(query, (str(gscd),))
-        row = cursor.fetchone()
+        Concurrent updates (other threads, or the other server's process) can't overwrite
+        each other. `change` edits the dict in place ({} if the column is empty). The
+        dict is returned.
+        """
+        self._validate_column(column)
+        conn = self._conn
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute(f"SELECT {column} FROM player_saves WHERE gscd = ?", (gscd,)).fetchone()
+            data = json.loads(row[column]) if row and row[column] else {}
+            change(data)
+            self._upsert(conn, gscd, column, data)
+        return data
 
-        if row and row[column]:
-            return json.loads(row[column])
-
-        return None
-
-    def does_gsid_exists(self, gsid: str) -> bool:
-        query = "SELECT 1 FROM player_saves WHERE gscd = ? LIMIT 1"
-        cursor = self._conn.execute(query, (gsid,))
-        return cursor.fetchone() is not None
-
-    def write_full_state(self, gscd: str, player_data: dict, game_sync: dict, sleeping_pokemon: dict):
+    def write_full_state(self, gscd: str, player_data: dict, game_sync: dict, sleeping_pokemon: dict | None) -> None:
+        """Replace the three columns a Game Sync writes in a single transaction."""
         query = """
             INSERT INTO player_saves (gscd, player_data, game_sync, sleeping_pokemon)
             VALUES (?, ?, ?, ?)
@@ -134,30 +146,47 @@ class DBManager:
                 sleeping_pokemon = excluded.sleeping_pokemon
         """
         with self._conn:
-            self._conn.execute(query, (
-                str(gscd),
-                json.dumps(player_data, indent=2, ensure_ascii=False),
-                json.dumps(game_sync, indent=2, ensure_ascii=False),
-                json.dumps(sleeping_pokemon, indent=2, ensure_ascii=False)
-            ))
+            self._conn.execute(query, (gscd, _to_json(player_data), _to_json(game_sync), _to_json(sleeping_pokemon)))
 
-    def read_full_state(self, gscd: str) -> dict | None:
-        query = "SELECT player_data, game_sync, sleeping_pokemon FROM player_saves WHERE gscd = ?"
-        cursor = self._conn.execute(query, (str(gscd),))
-        row = cursor.fetchone()
-        if row:
-            return [
-                json.loads(row["player_data"]) if row["player_data"] else None,
-                json.loads(row["game_sync"]) if row["game_sync"] else None,
-                json.loads(row["sleeping_pokemon"]) if row["sleeping_pokemon"] else None,
-            ]
-        return None
+    def read_full_state(self, gscd: str) -> tuple[dict | None, dict | None, dict | None] | None:
+        """(player_data, game_sync, sleeping_pokemon) of a save, or None if it has no row."""
+        row = self._conn.execute(
+            "SELECT player_data, game_sync, sleeping_pokemon FROM player_saves WHERE gscd = ?", (gscd,)
+        ).fetchone()
+        if row is None:
+            return None
+        player_data, game_sync, sleeping_pokemon = (json.loads(column) if column else None for column in row)
+        return player_data, game_sync, sleeping_pokemon
 
-    def close(self):
-        if hasattr(self._local, "conn") and self._local.conn:
-            self._local.conn.close()
-            self._local.conn = None
+    # ------------------
+    # Nintendo WFC users
+    # ------------------
 
-Path(ROOT_DIR / "save_data").mkdir(exist_ok=True)
-fix_ownership(Path(ROOT_DIR / "save_data"))
-db = DBManager(Path(ROOT_DIR / "save_data" / "pokemon_saves.db"))
+    def save_wfc_user(self, user_id: str, password: str, profiles: dict) -> None:
+        """Create or replace a Nintendo WFC user.
+
+        `profiles` maps a branch code to the fields of a GameProfile.
+        """
+        query = """
+            INSERT INTO wfc_users (user_id, password, profiles)
+            VALUES (?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                password = excluded.password,
+                profiles = excluded.profiles
+        """
+        with self._conn:
+            self._conn.execute(query, (user_id, password, json.dumps(profiles, ensure_ascii=False)))
+
+    def get_all_wfc_users(self) -> list[dict]:
+        """Every Nintendo WFC user, as {"id", "password", "profiles"}."""
+        return [
+            {
+                "id": row["user_id"],
+                "password": row["password"],
+                "profiles": json.loads(row["profiles"]) if row["profiles"] else {},
+            }
+            for row in self._conn.execute("SELECT user_id, password, profiles FROM wfc_users")
+        ]
+
+
+db = DBManager(SAVE_DIR / "pokemon_saves.db")

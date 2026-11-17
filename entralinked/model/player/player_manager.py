@@ -1,85 +1,55 @@
-#!/usr/bin/env python3
-import os
+"""Loads and saves players."""
 import logging
-from pathlib import Path
+from dataclasses import asdict
 
-from paths import ROOT_DIR
-from utility.db_manager import db
-from utility.gsid_utility import GsidUtility
-from model.player.player import Player, PlayerStatus
+from utils.constants import is_b2w2
+
+from ...utility import gsid_utility
+from ...utility.db_manager import db
+from .player import Player, new_player_data
 
 logger = logging.getLogger(__name__)
 
-_GSCD_PATH = ROOT_DIR / "save_data" / "gscd.txt"
-
-# On Linux, since the server must be run with sudo,
-# all created files must have their membership adjusted
-# so we don't have to be sudo to delete/modify them.
-def fix_ownership(path):
-    uid = os.environ.get("SUDO_UID")
-    gid = os.environ.get("SUDO_GID")
-
-    if uid and gid:
-        os.chown(path, int(uid), int(gid))
 
 class PlayerManager:
-    def __init__(self):
-        logger.info("PlayerManager initialized ...")
+    """Load and save players.
 
-    def load_player(self, gscd: str):
-        if not GsidUtility.is_valid_gamesync_id(gscd):
-            logger.error(f"Invalid Game Sync ID: {gscd}")
-            return
+    Players are read from the database for every request.
+    """
 
-        state = db.read_full_state(gscd)
-
-        if state is None:
-            logger.error(f"No data found for Game Sync ID: {gscd}")
-            return
-
-        player_data, game_sync, sleeping_pokemon = state
-
-        return Player.from_dict(player_data, game_sync, sleeping_pokemon)
-
-    def save_player(self, player: Player):
-        try:
-            new_player_data, game_sync, sleeper = player.to_dict()
-
-            db.write_gscd(player.game_sync_id)
-
-            db.write_full_state(player.game_sync_id, new_player_data, game_sync, sleeper)
-
-        except Exception as e:
-            logger.error(f"Could not save player data for {player.game_sync_id}: {e}")
-            return False
-
-        return True
-
-    def register_player(self, game_sync_id: str, rom_code: int, lang_code: int):
-        if not GsidUtility.is_valid_gamesync_id(game_sync_id):
-            logger.error(f"Attempted to register invalid Game Sync ID: {game_sync_id}")
+    def load_player(self, gscd: str | None) -> Player | None:
+        """Return the player with this Game Sync ID. Returns None if it is invalid or not registered."""
+        if gscd is None or not gsid_utility.is_valid_gscd(gscd):
+            logger.error("Invalid Game Sync ID: %s", gscd)
             return None
 
-        if db.read(game_sync_id, "game_sync") is not None:
-            logger.warning(f"Can't register player {game_sync_id} because the data file already exists!")
+        player_data, game_sync, sleeping_pokemon = db.read_full_state(gscd) or (None, None, None)
+
+        if player_data is None:
+            logger.info("Game Sync ID %s is not registered", gscd)
             return None
 
-        player = Player(game_sync_id)
-        player.status = PlayerStatus.AWAKE
-        player.rom_code = rom_code
-        player.language_code = lang_code
+        return Player.from_saved(gscd, player_data, game_sync, sleeping_pokemon)
 
-        if not self.save_player(player):
-            return None
+    def save_player(self, player: Player) -> None:
+        """Write the player's save data."""
+        db.write_gscd(player.gscd)  # the starting garden and debug chest data
 
-        self._save_gscd(game_sync_id)
-        return player
+        player_data = db.read(player.gscd, "player_data")
+        if player_data is None:
+            player_data = new_player_data(db.next_id("member_id")[0])
 
-    def _save_gscd(self, game_sync_id: str):
-        try:
-            _GSCD_PATH.parent.mkdir(parents=True, exist_ok=True)
-            _GSCD_PATH.write_text(game_sync_id)
-            fix_ownership(_GSCD_PATH)
-            logger.info(f"Saved Game Sync ID to {_GSCD_PATH}")
-        except OSError as e:
-            logger.warning(f"Could not write gscd.txt for {game_sync_id}: {e}")
+        member = player_data["member"]
+        member.update(player.member_fields())
+        member["member_savedata_id"] = member["member_id"]
+
+        if is_b2w2(player.rom_id):
+            player_data["medals"] = player.medals
+            player_data["favorite_medal"] = player.favorite_medal
+
+        sleeper = asdict(player.dreamer_info) if player.dreamer_info is not None else None
+        db.write_full_state(player.gscd, player_data, player.game_sync_data(), sleeper)
+
+    def register_player(self, gscd: str, rom_id: int | None, langcode: int | None) -> None:
+        """Create the player of a new Game Sync ID, which must be valid and not registered yet."""
+        self.save_player(Player(gscd, rom_id=rom_id, langcode=langcode))

@@ -1,22 +1,10 @@
-#!/usr/bin/env python3
+"""Random tokens and challenges for the Nintendo WFC login handshake."""
 import secrets
 
-class CredentialGenerator:
+CHALLENGE_CHARTABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
-    CHALLENGE_CHARTABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-    
-    def __init__(self):
-        pass
 
-    @staticmethod
-    def generate_challenge(length: int):
-        challenge = []
+def generate_challenge(length: int) -> str:
+    """`length` random upper-case letters and digits."""
+    return "".join(secrets.choice(CHALLENGE_CHARTABLE) for _ in range(length))
 
-        for i in range(length):
-            challenge.append(CredentialGenerator.CHALLENGE_CHARTABLE[secrets.randbelow(len(CredentialGenerator.CHALLENGE_CHARTABLE))])
-
-        return ''.join(challenge)
-    
-    @staticmethod
-    def generate_auth_token(length: int):
-        return secrets.token_urlsafe(length)
