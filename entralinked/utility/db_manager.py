@@ -3,7 +3,7 @@ import json
 import sqlite3
 from collections.abc import Callable
 
-from ..model.player.starting_save import STARTING_PLOTS, starting_chest, starting_garden
+from ..model.player.starting_save import STARTING_PLOTS, starting_chest, starting_garden, starting_shelf
 from ..paths import SAVE_DIR
 from .sqlite_store import SQLiteStore
 
@@ -23,7 +23,8 @@ class DBManager(SQLiteStore):
             sleeping_pokemon TEXT,
             game_sync TEXT,
             crop_data TEXT,
-            chest_data TEXT
+            chest_data TEXT,
+            share_data TEXT
         )""",
         """
         CREATE TABLE IF NOT EXISTS wfc_users (
@@ -38,8 +39,8 @@ class DBManager(SQLiteStore):
         )""",
     )
     # Global id sequences
-    ID_COUNTERS = frozenset({"member_id", "my_croft_id", "my_interior_id"})
-    COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "crop_data", "chest_data"})
+    ID_COUNTERS = frozenset({"member_id", "my_croft_id", "my_interior_id", "material_id"})
+    COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "crop_data", "chest_data", "share_data"})
 
     def _validate_column(self, column: str) -> None:
         if column not in self.COLUMNS:
@@ -75,7 +76,7 @@ class DBManager(SQLiteStore):
     # -------------
 
     def write_gscd(self, gscd: str) -> None:
-        """Create the row of a new Game Sync ID, with its starting garden and chest.
+        """Create the row of a new Game Sync ID, with its starting garden, chest and Share Shelf.
 
         Do nothing if the row exists.
         """
@@ -86,13 +87,21 @@ class DBManager(SQLiteStore):
                 return
             croft_ids = self._next_id(conn, "my_croft_id", STARTING_PLOTS)
             conn.execute(
-                "INSERT INTO player_saves (gscd, crop_data, chest_data) VALUES (?, ?, ?)",
-                (gscd, _to_json(starting_garden(croft_ids)), _to_json(starting_chest())),
+                "INSERT INTO player_saves (gscd, crop_data, chest_data, share_data) VALUES (?, ?, ?, ?)",
+                (gscd, _to_json(starting_garden(croft_ids)), _to_json(starting_chest()), _to_json(starting_shelf())),
             )
 
     def gscd_exists(self, gscd: str) -> bool:
         """Whether a Game Sync ID has a row."""
         return self._conn.execute("SELECT 1 FROM player_saves WHERE gscd = ?", (gscd,)).fetchone() is not None
+
+    def find_gscd(self, member_savedata_id: int) -> str | None:
+        """The Game Sync ID of the save with this member_savedata_id, if there is one."""
+        row = self._conn.execute(
+            "SELECT gscd FROM player_saves WHERE json_extract(player_data, '$.member.member_savedata_id') = ?",
+            (member_savedata_id,),
+        ).fetchone()
+        return row["gscd"] if row else None
 
     def get_all_gscds(self) -> list[str]:
         """Every Game Sync ID with a row."""

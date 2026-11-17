@@ -1,4 +1,4 @@
-"""The empty garden and chest a new Game Sync ID starts with in the Dream World."""
+"""The empty garden, chest, and Share Shelf a new Game Sync ID starts with in the Dream World."""
 from itertools import product
 
 BERRY_ITEM_ID_OFFSET = 148  # Berry n is item n + 148
@@ -29,3 +29,7 @@ def starting_chest() -> dict:
             for berry_id in range(1, BERRY_COUNT + 1)
         ],
     }
+
+
+def starting_shelf() -> dict:
+    return {"cnt": 0, "share_list": []}
