@@ -103,8 +103,9 @@ def create_app(context: Context) -> Flask:
 class HttpServer:
     """Serves the app over HTTP(S)."""
 
-    def __init__(self, context: Context) -> None:
+    def __init__(self, context: Context, http_port: int = HTTP_PORT) -> None:
         self.app = create_app(context)
+        self.http_port = http_port
         self.http_server: BaseWSGIServer | None = None
         self.http_thread: threading.Thread | None = None
         self.server: TLSServer | None = None
@@ -112,10 +113,10 @@ class HttpServer:
 
     def start(self) -> None:
         """Start the HTTP and HTTPS servers."""
-        self.http_server = make_server("0.0.0.0", HTTP_PORT, self.app, threaded=True)
+        self.http_server = make_server("0.0.0.0", self.http_port, self.app, threaded=True)
         self.http_thread = threading.Thread(target=self.http_server.serve_forever, daemon=True)
         self.http_thread.start()
-        logger.info("HTTP server listening @ port %d", HTTP_PORT)
+        logger.info("HTTP server listening @ port %d", self.http_port)
 
         pem = SERVER_PEM_PATH.read_text(encoding="UTF-8") # update the cert in 2076
         chain = X509CertChain()

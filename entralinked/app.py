@@ -1,4 +1,6 @@
 """Starts the DNS, HTTP(S), and GameSpy servers that make up the Game Sync server."""
+import argparse
+import dataclasses
 import logging
 import signal
 import socket
@@ -13,7 +15,7 @@ from .model.player.player_manager import PlayerManager
 from .model.user.user_manager import UserManager
 from .network.dns.server import DnsServer
 from .network.gamespy.server import GameSpyServer
-from .network.http.http_server import HttpServer
+from .network.http.http_server import HTTP_PORT, HttpServer
 from .paths import CONFIG_PATH
 from .utility.db_manager import db
 
@@ -37,12 +39,25 @@ def resolve_host_address(configuration: Configuration) -> str:
     return socket.gethostbyname(configuration.host_name)
 
 
+def build_parser() -> argparse.ArgumentParser:
+    """Build the command-line options."""
+    parser = argparse.ArgumentParser(description="Game Sync server")
+    parser.add_argument("--host", help='the host name the DNS server gives out, such as your public '
+                                       'address so others can connect. Overrides "host_name" in config.json, '
+                                       'and "local" means this machine\'s address on the local network')
+    parser.add_argument("--http-port", type=int, default=HTTP_PORT,
+                        help=f"the port for plain HTTP (default {HTTP_PORT}); the DS uses port 80, so use 80 "
+                             "unless a web server on this machine passes port 80 on")
+    return parser
+
+
 def main() -> int:
     """Run the servers until SIGINT or SIGTERM and return the exit code.
 
     The exit code is 1 if a server couldn't start (usually a port that is taken,
     or that needs root).
     """
+    args = build_parser().parse_args()
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -51,11 +66,13 @@ def main() -> int:
     started_at = time.perf_counter()
 
     configuration = load_configuration(CONFIG_PATH)
+    if args.host:
+        configuration = dataclasses.replace(configuration, host_name=args.host)
     logger.info("Using configuration %s", configuration)
 
     context = Context(configuration, UserManager(), PlayerManager(), DlcList())
     host_address = resolve_host_address(configuration)
-    servers = (DnsServer(host_address), HttpServer(context), GameSpyServer(context))
+    servers = (DnsServer(host_address), HttpServer(context, args.http_port), GameSpyServer(context))
 
     stop_requested = threading.Event()
     for signal_number in (signal.SIGINT, signal.SIGTERM):
