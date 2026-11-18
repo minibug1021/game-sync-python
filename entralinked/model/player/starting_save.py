@@ -1,8 +1,8 @@
 """The empty garden, chest, and Share Shelf a new Game Sync ID starts with in the Dream World."""
 from itertools import product
 
-BERRY_ITEM_ID_OFFSET = 148  # Berry n is item n + 148
-BERRY_COUNT = 64
+from utils.berries import BERRY_COUNT, BERRY_ITEM_IDS
+
 STARTING_BERRIES_EACH = 99  # debug data
 
 GARDEN_ROWS = 2
@@ -25,8 +25,8 @@ def starting_chest() -> dict:
     return {
         "cnt": BERRY_COUNT,
         "list": [
-            {"pokeitem_id": berry_id + BERRY_ITEM_ID_OFFSET, "item_cnt": STARTING_BERRIES_EACH, "date": "2000-01-01"}
-            for berry_id in range(1, BERRY_COUNT + 1)
+            {"pokeitem_id": item_id, "item_cnt": STARTING_BERRIES_EACH, "date": "2000-01-01"}
+            for item_id in BERRY_ITEM_IDS
         ],
     }
 

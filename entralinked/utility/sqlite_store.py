@@ -14,7 +14,7 @@ def fix_ownership(path: Path) -> None:
     uid = os.environ.get("SUDO_UID")
     gid = os.environ.get("SUDO_GID")
 
-    if uid and gid and hasattr(os, "chown"):
+    if uid and gid:
         os.chown(path, int(uid), int(gid))
 
 

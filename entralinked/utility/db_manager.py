@@ -38,8 +38,6 @@ class DBManager(SQLiteStore):
             last_id INTEGER NOT NULL
         )""",
     )
-    # Global id sequences
-    ID_COUNTERS = frozenset({"member_id", "my_croft_id", "my_interior_id", "material_id"})
     COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "crop_data", "chest_data", "share_data"})
 
     def _validate_column(self, column: str) -> None:
@@ -56,8 +54,6 @@ class DBManager(SQLiteStore):
         Ids only ever go up and are never reused. Each name has its own sequence, which
         every player shares.
         """
-        if name not in self.ID_COUNTERS:
-            raise ValueError(f"Invalid id counter: '{name}'")
         with self._conn:
             return self._next_id(self._conn, name, count)
 
@@ -114,12 +110,6 @@ class DBManager(SQLiteStore):
             ON CONFLICT(gscd) DO UPDATE SET {column} = excluded.{column};
         """
         conn.execute(query, (gscd, None if data is None else _to_json(data)))
-
-    def write(self, gscd: str, column: str, data: dict | None) -> None:
-        """Replace one column of a save (None empties it)."""
-        self._validate_column(column)
-        with self._conn:
-            self._upsert(self._conn, gscd, column, data)
 
     def read(self, gscd: str, column: str) -> dict | None:
         """One column of a save. None if the row or the column is empty."""

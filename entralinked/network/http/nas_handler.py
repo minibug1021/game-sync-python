@@ -98,9 +98,7 @@ class NasHandler:
 
         if user is None:
             # Unknown id or wrong password. Only an unknown id may be registered.
-            if (not self.configuration.allow_wfc_registration_through_login
-                    or not is_valid_user_id(req.userid)
-                    or self.user_manager.does_user_exist(req.userid)):
+            if not self.configuration.allow_wfc_registration_through_login or not is_valid_user_id(req.userid):
                 return nas_response(NasReturnCode.USER_NOT_FOUND)
 
             user = self.user_manager.register_user(req.userid, req.passwd)
@@ -115,13 +113,10 @@ class NasHandler:
 
     def handle_create_account(self, req: NasRequest) -> ResponseReturnValue:
         """Register a new WFC account."""
-        if not is_valid_user_id(req.userid) or self.user_manager.does_user_exist(req.userid):
-            return nas_response(NasReturnCode.USER_ALREADY_EXISTS)
-
-        user = self.user_manager.register_user(req.userid, req.passwd)
+        user = self.user_manager.register_user(req.userid, req.passwd) if is_valid_user_id(req.userid) else None
 
         if user is None:
-            return nas_response(NasReturnCode.INTERNAL_SERVER_ERROR)
+            return nas_response(NasReturnCode.USER_ALREADY_EXISTS)
 
         logger.info("Created account for user %s", user.redacted_id)
         return nas_response(NasReturnCode.REGISTRATION_SUCCESS)

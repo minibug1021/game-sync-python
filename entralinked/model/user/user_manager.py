@@ -50,15 +50,10 @@ class UserManager:
             profiles={branch_code: asdict(profile) for branch_code, profile in user.profiles.items()},
         )
 
-    def does_user_exist(self, user_id: str) -> bool:
-        """Whether a user id is registered."""
-        return user_id in self.users
-
     def register_user(self, user_id: str, password: str) -> User | None:
         """Create a user. Return None if the id is taken."""
         with self._lock:
             if user_id in self.users:
-                logger.warning("Attempted to register user with duplicate ID: %s", user_id)
                 return None
 
             user = User(user_id, password)

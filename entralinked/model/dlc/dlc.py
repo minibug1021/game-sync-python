@@ -28,19 +28,19 @@ class DlcList:
         self.dlc_list: list[Dlc] = []
 
         customize: dict[str, dict] = json.loads(customize_path.read_text(encoding="utf-8"))
-        for key, entry in customize.items():
+        loaded: set[Path] = set()
+        for entry in customize.values():
             for _, rel, _ in entry["data"].values():
-                if not rel:
+                path = data_dir / rel if rel else None
+                if path is None or path in loaded:
                     continue
-
-                path = data_dir / rel
                 if not path.is_file():
                     logger.warning("DLC file in customize.json is missing: %s", path)
                     continue
 
+                loaded.add(path)
                 dlc_type, language, name = rel.split("/")
-                self.dlc_list.append(Dlc(path.absolute(), name, dlc_type, language, int(key[1:4]),
-                                         path.stat().st_size))
+                self.dlc_list.append(Dlc(path.absolute(), name, dlc_type, language, entry["id"], path.stat().st_size))
 
         logger.info("Loaded %d DLC file(s) from %s", len(self.dlc_list), data_dir)
 

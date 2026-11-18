@@ -96,8 +96,6 @@ def _optional_int(name: str) -> int | None:
 
 def _language(language_code: int | None) -> str:
     """Return the raw_text folder for a cartridge's language."""
-    if language_code is None:
-        return DEFAULT_LANGUAGE
     return LANGCODES.get(language_code, DEFAULT_LANGUAGE)
 
 
