@@ -100,7 +100,7 @@ class DBManager(SQLiteStore):
         return row["gscd"] if row else None
 
     def get_all_gscds(self) -> list[str]:
-        """Every Game Sync ID with a row."""
+        """Return every Game Sync ID with a row."""
         return [row["gscd"] for row in self._conn.execute("SELECT gscd FROM player_saves")]
 
     def _upsert(self, conn: sqlite3.Connection, gscd: str, column: str, data: dict | None) -> None:
