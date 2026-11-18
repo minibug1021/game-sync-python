@@ -21,13 +21,17 @@ from ...utility import gsid_utility
 from ..avenue.avenue_data import AvenueVisitor
 from ..pkmn.pkmn_info import PkmnInfo
 from .dream_data import DreamEncounter, DreamItem
+from .starting_save import starting_decor
 
 # Testing data
 STARTING_POINTS = 10_000
 
 
-def new_player_data(member_id: int) -> dict:
-    """Return the player_data column of a Game Sync ID that was just registered."""
+def new_player_data(member_id: int, my_interior_ids: list[int]) -> dict:
+    """Return the player_data column of a Game Sync ID that was just registered.
+
+    my_interior_ids are the ids for its starting decor.
+    """
     return {
         "member": {
             "member_id":            member_id,
@@ -85,6 +89,7 @@ def new_player_data(member_id: int) -> dict:
             "nextstart_remaintime": 0,
             "last_started_at_timezone": None,
             "unread_mail_count":    0,
+            "my_interior_list":     starting_decor(my_interior_ids),
         },
         "token": None,
     }

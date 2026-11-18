@@ -1,13 +1,17 @@
-"""The empty garden, chest, and Share Shelf a new Game Sync ID starts with in the Dream World."""
+"""The garden, chest, Share Shelf, and decor a new Game Sync ID starts with in the Dream World."""
 from itertools import product
 
 from utils.berries import BERRY_COUNT, BERRY_ITEM_IDS
+from utils.constants import SHARE_SHELF_ID, WATERINGCAN_ID
 
 STARTING_BERRIES_EACH = 99  # debug data
 
 GARDEN_ROWS = 2
 GARDEN_COLUMNS = 3
 STARTING_PLOTS = GARDEN_ROWS * GARDEN_COLUMNS
+
+# owned from the start
+STARTING_DECOR_IDS = (WATERINGCAN_ID, SHARE_SHELF_ID)
 
 
 def starting_garden(croft_ids: list[int]) -> dict:
@@ -33,3 +37,9 @@ def starting_chest() -> dict:
 
 def starting_shelf() -> dict:
     return {"cnt": 0, "share_list": []}
+
+
+def starting_decor(my_interior_ids: list[int]) -> list[dict]:
+    """Return the my_interior_list of a new save."""
+    return [{"my_interior_id": my_interior_id, "interior_id": decor_id}
+            for decor_id, my_interior_id in zip(STARTING_DECOR_IDS, my_interior_ids, strict=True)]
