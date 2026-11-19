@@ -3,6 +3,8 @@ import json
 import sqlite3
 from collections.abc import Callable
 
+from utils.constants import DreamPalStatus
+
 from ..model.player.starting_save import STARTING_PLOTS, starting_chest, starting_garden, starting_shelf
 from ..paths import SAVE_DIR
 from .sqlite_store import SQLiteStore
@@ -36,6 +38,17 @@ class DBManager(SQLiteStore):
         CREATE TABLE IF NOT EXISTS id_counters (
             name TEXT PRIMARY KEY,
             last_id INTEGER NOT NULL
+        )""",
+        # One row per direction.
+        """
+        CREATE TABLE IF NOT EXISTS dream_pals (
+            from_gscd TEXT NOT NULL,
+            to_gscd TEXT NOT NULL,
+            status INTEGER NOT NULL CHECK (status IN (1, 2, 3)),
+            created_at TEXT NOT NULL,
+            visit_count INTEGER NOT NULL DEFAULT 0,
+            last_visit_date TEXT,
+            PRIMARY KEY (from_gscd, to_gscd)
         )""",
     )
     COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "crop_data", "chest_data", "share_data"})
@@ -156,6 +169,68 @@ class DBManager(SQLiteStore):
             return None
         player_data, game_sync, sleeping_pokemon = (json.loads(column) if column else None for column in row)
         return player_data, game_sync, sleeping_pokemon
+
+    # ----------
+    # Dream Pals
+    # ----------
+
+    def request_dream_pal(self, from_gscd: str, to_gscd: str, now: str) -> bool:
+        """Record a Dream Pal request and return whether the two are now Dream Pals.
+
+        If `to_gscd` already requested `from_gscd`, the two become Dream Pals immediately.
+        """
+        conn = self._conn
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            status = self._dream_pal_status(conn, from_gscd, to_gscd)
+            if status == DreamPalStatus.REQUESTED:
+                conn.executemany("UPDATE dream_pals SET status = ?, created_at = ? WHERE from_gscd = ? AND to_gscd = ?",
+                                 [(DreamPalStatus.PALS, now, from_gscd, to_gscd),
+                                  (DreamPalStatus.PALS, now, to_gscd, from_gscd)])
+                return True
+            if status == DreamPalStatus.NONE:
+                conn.executemany("INSERT INTO dream_pals (from_gscd, to_gscd, status, created_at) VALUES (?, ?, ?, ?)",
+                                 [(from_gscd, to_gscd, DreamPalStatus.REQUESTING, now),
+                                  (to_gscd, from_gscd, DreamPalStatus.REQUESTED, now)])
+            return status == DreamPalStatus.PALS
+
+    @staticmethod
+    def _dream_pal_status(conn: sqlite3.Connection, gscd: str, other: str) -> DreamPalStatus:
+        row = conn.execute("SELECT status FROM dream_pals WHERE from_gscd = ? AND to_gscd = ?",
+                           (gscd, other)).fetchone()
+        return DreamPalStatus(row[0]) if row else DreamPalStatus.NONE
+
+    def dream_pal_status(self, gscd: str, other: str) -> DreamPalStatus:
+        """How `gscd` stands with `other`."""
+        return self._dream_pal_status(self._conn, gscd, other)
+
+    def dream_pals(self, gscd: str, status: DreamPalStatus) -> list[str]:
+        """Return the relationships `gscd` has with others, oldest first."""
+        return [row[0] for row in self._conn.execute(
+            "SELECT to_gscd FROM dream_pals WHERE from_gscd = ? AND status = ? ORDER BY created_at, to_gscd",
+            (gscd, status))]
+
+    def record_dream_pal_visit(self, gscd: str, other: str, today: str) -> int:
+        """Count a visit from `gscd` to Dream Pal `other` and return how many days `gscd` has visited.
+
+        Only the first visit on each day counts. If the two aren't Dream Pals, nothing is
+        recorded and the result is 0.
+        """
+        conn = self._conn
+        with conn:
+            conn.execute(
+                """UPDATE dream_pals SET visit_count = visit_count + 1, last_visit_date = ?
+                   WHERE from_gscd = ? AND to_gscd = ? AND status = ? AND last_visit_date IS NOT ?""",
+                (today, gscd, other, DreamPalStatus.PALS, today))
+            row = conn.execute("SELECT visit_count FROM dream_pals WHERE from_gscd = ? AND to_gscd = ? AND status = ?",
+                               (gscd, other, DreamPalStatus.PALS)).fetchone()
+        return row[0] if row else 0
+
+    def remove_dream_pal(self, gscd: str, other: str) -> None:
+        """Delete everything between `gscd` and `other`, which cancels a request or ends a friendship."""
+        with self._conn:
+            self._conn.execute(
+                "DELETE FROM dream_pals WHERE (from_gscd, to_gscd) IN ((?, ?), (?, ?))", (gscd, other, other, gscd))
 
     # ------------------
     # Nintendo WFC users
