@@ -16,7 +16,7 @@ uv sync
 uv run game_sync_server/server.py
 ```
 
-On Linux the server has to be started as root, because ports 53 and 443 are privileged. Run `uv sync` as your normal user, then `sudo .venv/bin/python game_sync_server/server.py`.
+On Linux the server has to be started as root, because ports 53, 80, and 443 are privileged. Run `uv sync` as your normal user, then `sudo .venv/bin/python game_sync_server/server.py`.
 
 When it has started, the server prints an address. Enter that as the DNS server in the game's "Nintendo WFC Settings", and the DS will reach this server instead of Nintendo's.
 

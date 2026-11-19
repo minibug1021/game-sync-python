@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Start the Game Sync server with `python server.py` (as root on Linux, for ports 53 and 443)."""
+"""Start the Game Sync server with `python server.py` (as root on Linux, for ports 53, 80, and 443)."""
 import sys
 from pathlib import Path
 

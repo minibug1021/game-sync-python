@@ -23,7 +23,7 @@ from .pgl_handler import PglHandler
 logger = logging.getLogger(__name__)
 
 HTTPS_PORT = 443  # the DS is only given an address, so the port can't change
-HTTP_PORT = 8081
+HTTP_PORT = 80  # the DS asks for port 80
 
 
 class RequestBodyMiddleware:

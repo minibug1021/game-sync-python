@@ -46,8 +46,8 @@ def build_parser() -> argparse.ArgumentParser:
                                        'address so others can connect. Overrides "host_name" in config.json, '
                                        'and "local" means this machine\'s address on the local network')
     parser.add_argument("--http-port", type=int, default=HTTP_PORT,
-                        help=f"the port for plain HTTP (default {HTTP_PORT}); the DS uses port 80, so use 80 "
-                             "unless a web server on this machine passes port 80 on")
+                        help=f"the port for plain HTTP (default {HTTP_PORT}, which the DS uses). Change it only "
+                             "when a web server on this machine passes port 80 on to this one")
     return parser
 
 
