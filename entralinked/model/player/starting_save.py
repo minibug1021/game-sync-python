@@ -4,7 +4,7 @@ from itertools import product
 from utils.berries import BERRY_COUNT, BERRY_ITEM_IDS
 from utils.constants import SHARE_SHELF_ID, WATERINGCAN_ID
 
-STARTING_BERRIES_EACH = 99  # debug data
+STARTING_BERRIES_EACH = 999  # debug data
 
 GARDEN_ROWS = 2
 GARDEN_COLUMNS = 3
