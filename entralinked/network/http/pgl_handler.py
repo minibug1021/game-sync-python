@@ -13,7 +13,7 @@ from flask.typing import ResponseReturnValue
 
 from utils import save_data
 from utils.constants import PlayerStatus, is_b2w2
-from utils.language import LANGCODES
+from utils.language import game_language
 
 from ...context import Context
 from ...model.avenue.avenue_data import AvenueVisitor
@@ -33,7 +33,6 @@ USERNAME = "pokemon"
 PASSWORD = "2Phfv9MY"
 
 HEADER_SIZE = 128
-DEFAULT_LANGUAGE = "en"
 
 # Fixed sizes of the data sent when a Pokémon wakes up
 MAX_ENCOUNTERS = 10
@@ -94,11 +93,6 @@ def _optional_int(name: str) -> int | None:
     return int(request.args[name]) if name in request.args else None
 
 
-def _language(language_code: int | None) -> str:
-    """Return the raw_text folder for a cartridge's language."""
-    return LANGCODES.get(language_code, DEFAULT_LANGUAGE)
-
-
 def _text_lines(language: str, name: str) -> list[str]:
     return (RAW_TEXT_DIR / language / f"{name}.txt").read_text(encoding="UTF-8").splitlines()
 
@@ -146,7 +140,7 @@ def _items(items: list[DreamItem]) -> bytes:
 
 def _loblolly_items(langcode: int | None) -> bytes:
     """The five Loblolly items, in random order."""
-    names = _text_lines(_language(langcode), "loblolly")
+    names = _text_lines(game_language(langcode), "loblolly")
     return b"".join(struct.pack("<H", item_id) + _padded_name(names[item_id], LOBLOLLY_ITEM_NAME_SIZE,
                                                               LOBLOLLY_ITEM_NAME_SIZE)
                     for item_id in random.sample(LOBLOLLY_ITEM_IDS, len(LOBLOLLY_ITEM_IDS)))

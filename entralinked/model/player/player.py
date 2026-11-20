@@ -1,7 +1,7 @@
 """The Game Sync server keeps one Player for each Game Sync ID.
 
 A player is stored in three JSON columns of the shared database, which the Dream World
-server reads and writes too:
+server reads and writes to:
 
     player_data       {"member": the Global Link profile, "medals": [...], "favorite_medal": ...,
                        "token": ...}
@@ -16,6 +16,7 @@ from typing import Self
 
 from utils import save_data, text
 from utils.constants import PlayerStatus, Rom
+from utils.language import game_language
 
 from ...utility import gsid_utility
 from ..avenue.avenue_data import AvenueVisitor
@@ -172,7 +173,8 @@ class Player:
             "play_status":      self.play_status.value,
             "sleeping_flag":    0 if self.play_status == PlayerStatus.AWAKE else 1,
             "pokemon_no":       dreamer.pokemon_no if dreamer else None,
-            "pokemon_name":     text.lookup_str("pokemon", dreamer.pokemon_no) if dreamer else None,
+            "pokemon_name":     (text.lookup_str("pokemon", dreamer.pokemon_no, game_language(self.langcode))
+                                 if dreamer else None),
             "form_no":          dreamer.form_no if dreamer else None,
             "type1":            dreamer.type1 if dreamer else None,
             "type2":            dreamer.type2 if dreamer else None,
