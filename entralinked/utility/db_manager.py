@@ -25,6 +25,8 @@ class DBManager:
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS player_saves (
                     gscd TEXT PRIMARY KEY,
+                    member_id TEXT UNIQUE,
+                    water_cnt INTEGER,
                     player_data TEXT,
                     sleeping_pokemon TEXT,
                     game_sync TEXT,
@@ -56,7 +58,7 @@ class DBManager:
     def _validate_column(self, column: str):
         valid_columns = [
             "player_data", "sleeping_pokemon", "game_sync",
-            "wfc_profile", "crop_data", "chest_data", "share_data"
+            "wfc_profile", "crop_data", "chest_data", "share_data", "member_id", "water_cnt"
         ]
         if column not in valid_columns:
             raise ValueError(f"Invalid column name: '{column}'")
@@ -71,6 +73,7 @@ class DBManager:
                 }
                 for i, (y, x) in enumerate(product(range(2), range(3)))
             ],
+            "remains_watering": 20,
             "diglett_flag": 0,
         }
 
@@ -108,7 +111,7 @@ class DBManager:
                   "field_line3": "Steel-type move only once.",
                   "created_at": "2026-07-29 19:45",
                   "old_item_id": 563,
-                  "new_item_id": 563,
+                  "new_item_id": "",
                   "old_item_name": "Steel Gem"
                 }
               ]
@@ -149,6 +152,32 @@ class DBManager:
 
         return None
 
+    def f_read(self, member_id: str, column: str) -> dict | None:
+        self._validate_column(column)
+
+        query = f"SELECT {column} FROM player_saves WHERE member_id = ?"
+
+        cursor = self._conn.execute(query, (str(member_id),))
+        row = cursor.fetchone()
+
+        if row and row[column]:
+            return json.loads(row[column])
+
+        return None
+
+    def f_write(self, member_id: str, column: str, data: dict):
+        self._validate_column(column)
+        query = f"""
+            INSERT INTO player_saves (member_id, {column})
+            VALUES (?, ?)
+            ON CONFLICT(member_id) DO UPDATE SET {column} = excluded.{column};
+        """
+        with self._conn:
+            if data is None:
+                self._conn.execute(query, (str(member_id), None))
+            else:
+                self._conn.execute(query, (str(member_id), json.dumps(data, indent=2, ensure_ascii=False)))
+
     def does_gsid_exists(self, gsid: str) -> bool:
         query = "SELECT 1 FROM player_saves WHERE gscd = ? LIMIT 1"
         cursor = self._conn.execute(query, (gsid,))
@@ -182,6 +211,28 @@ class DBManager:
                 json.loads(row["sleeping_pokemon"]) if row["sleeping_pokemon"] else None,
             ]
         return None
+
+    def update_table(self):
+        query = """
+            ALTER TABLE player_saves ADD COLUMN share_data TEXT
+        """
+        query2 = """
+            ALTER TABLE player_saves ADD COLUMN water_cnt TEXT
+        """
+
+        query3 = """
+            ALTER TABLE player_saves ADD COLUMN member_id TEXT
+        """
+
+        query4 = """
+            CREATE UNIQUE INDEX IF NOT EXISTS member_id ON player_saves (member_id)
+        """
+
+        with self._conn:
+            self._conn.execute(query)
+            self._conn.execute(query2)
+            self._conn.execute(query3)
+            self._conn.execute(query4)
 
     def close(self):
         if hasattr(self._local, "conn") and self._local.conn:
