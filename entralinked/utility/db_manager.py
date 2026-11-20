@@ -30,9 +30,11 @@ class DBManager:
                     player_data TEXT,
                     sleeping_pokemon TEXT,
                     game_sync TEXT,
+                    friend_data TEXT,
                     crop_data TEXT,
                     chest_data TEXT,
-                    share_data TEXT
+                    share_data TEXT,
+                    footprint_list TEXT
                 )""")
 
         fix_ownership(self._db_path)
@@ -58,7 +60,7 @@ class DBManager:
     def _validate_column(self, column: str):
         valid_columns = [
             "player_data", "sleeping_pokemon", "game_sync",
-            "wfc_profile", "crop_data", "chest_data", "share_data", "member_id", "water_cnt"
+            "wfc_profile", "crop_data", "chest_data", "share_data", "member_id", "water_cnt", "friend_data", "footprint_list"
         ]
         if column not in valid_columns:
             raise ValueError(f"Invalid column name: '{column}'")
@@ -117,14 +119,28 @@ class DBManager:
               ]
         }
 
-        query = "INSERT OR IGNORE INTO player_saves (gscd, crop_data, chest_data, share_data) VALUES (?, ?, ?, ?)"
+        empty_friend = {
+              "friend_list": [
+
+              ]
+        }
+
+        empty_print_list = {
+              "list": [
+
+              ]
+        }
+
+        query = "INSERT OR IGNORE INTO player_saves (gscd, crop_data, chest_data, share_data, friend_data) VALUES (?, ?, ?, ?, ?)"
         with self._conn:
             self._conn.execute(query,
                                (str(gscd),
                                 json.dumps(empty_crop, indent=2),
                                 json.dumps(empty_chest, indent=2),
-                                json.dumps(empty_share, indent=2))
-                                )
+                                json.dumps(empty_share, indent=2),
+                                json.dumps(empty_friend, indent=2),
+                                json.dumps(empty_print_list, indent=2))
+                               )
 
     def write(self, gscd: str, column: str, data: dict):
         self._validate_column(column)
@@ -178,6 +194,17 @@ class DBManager:
             else:
                 self._conn.execute(query, (str(member_id), json.dumps(data, indent=2, ensure_ascii=False)))
 
+    def rand_id_read(self) -> dict | None:
+        column = "member_id"
+
+        query = f"SELECT {column} FROM player_saves ORDER BY RANDOM() LIMIT 1"
+
+        cursor = self._conn.execute(query)
+        row = cursor.fetchone()
+
+        return json.loads(row[column])
+
+
     def does_gsid_exists(self, gsid: str) -> bool:
         query = "SELECT 1 FROM player_saves WHERE gscd = ? LIMIT 1"
         cursor = self._conn.execute(query, (gsid,))
@@ -216,6 +243,7 @@ class DBManager:
         query = """
             ALTER TABLE player_saves ADD COLUMN share_data TEXT
         """
+
         query2 = """
             ALTER TABLE player_saves ADD COLUMN water_cnt TEXT
         """
@@ -228,11 +256,16 @@ class DBManager:
             CREATE UNIQUE INDEX IF NOT EXISTS member_id ON player_saves (member_id)
         """
 
+        query5 = """
+            ALTER TABLE player_saves ADD COLUMN friend_data TEXT
+        """
+
         with self._conn:
             self._conn.execute(query)
             self._conn.execute(query2)
             self._conn.execute(query3)
             self._conn.execute(query4)
+            self._conn.execute(query5)
 
     def close(self):
         if hasattr(self._local, "conn") and self._local.conn:
