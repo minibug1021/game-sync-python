@@ -7,7 +7,6 @@ from utils.constants import is_b2w2
 from ...utility import gsid_utility
 from ...utility.db_manager import db
 from .player import Player, new_player_data
-from .starting_save import STARTING_DECOR_IDS
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +33,11 @@ class PlayerManager:
 
     def save_player(self, player: Player) -> None:
         """Write the player's save data."""
-        db.write_gscd(player.gscd)  # the starting garden and debug chest data
+        db.write_gscd(player.gscd)  # the starting garden, decor, and debug chest data
 
         player_data = db.read(player.gscd, "player_data")
         if player_data is None:
-            player_data = new_player_data(db.next_id("member_id")[0],
-                                          db.next_id("my_interior_id", len(STARTING_DECOR_IDS)))
+            player_data = new_player_data(db.next_id("member_id")[0])
 
         member = player_data["member"]
         member.update(player.member_fields())

@@ -2,10 +2,17 @@
 import json
 import sqlite3
 from collections.abc import Callable
+from typing import ClassVar
 
 from utils.constants import DreamPalStatus
 
-from ..model.player.starting_save import STARTING_PLOTS, starting_chest, starting_garden, starting_shelf
+from ..model.player.starting_save import (
+    STARTING_DECOR_IDS,
+    STARTING_PLOTS,
+    starting_chest,
+    starting_decor,
+    starting_garden,
+)
 from ..paths import SAVE_DIR
 from .sqlite_store import SQLiteStore
 
@@ -24,9 +31,7 @@ class DBManager(SQLiteStore):
             player_data TEXT,
             sleeping_pokemon TEXT,
             game_sync TEXT,
-            crop_data TEXT,
-            chest_data TEXT,
-            share_data TEXT
+            chest_data TEXT
         )""",
         """
         CREATE TABLE IF NOT EXISTS wfc_users (
@@ -50,12 +55,64 @@ class DBManager(SQLiteStore):
             last_visit_date TEXT,
             PRIMARY KEY (from_gscd, to_gscd)
         )""",
+        """
+        CREATE TABLE IF NOT EXISTS garden_plots (
+            my_croft_id INTEGER PRIMARY KEY,
+            gscd TEXT NOT NULL,
+            x INTEGER NOT NULL,
+            y INTEGER NOT NULL,
+            pokeitem_id INTEGER,
+            dirt_hp INTEGER,
+            kinomi_state INTEGER,
+            planted_at INTEGER,
+            updated_at INTEGER,
+            watered_at INTEGER,
+            berry_hp INTEGER,
+            UNIQUE (gscd, x, y)
+        )""",
+        """
+        CREATE TABLE IF NOT EXISTS share_slots (
+            material_id INTEGER PRIMARY KEY,
+            gscd TEXT NOT NULL,
+            x INTEGER NOT NULL,
+            y INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            history_id TEXT,
+            old_member_savedata_id INTEGER,
+            pokemon_no INTEGER,
+            form_no INTEGER,
+            pgl_name TEXT,
+            nickname TEXT,
+            poke_nickname TEXT,
+            created_at TEXT,
+            old_item_id INTEGER,
+            new_item_id,
+            UNIQUE (gscd, x, y)
+        )""",
+        """
+        CREATE TABLE IF NOT EXISTS owned_decor (
+            my_interior_id INTEGER PRIMARY KEY,
+            gscd TEXT NOT NULL,
+            interior_id INTEGER NOT NULL,
+            x INTEGER,
+            y INTEGER
+        )""",
+        "CREATE INDEX IF NOT EXISTS owned_decor_gscd ON owned_decor (gscd)",
     )
-    COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "crop_data", "chest_data", "share_data"})
+    COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "chest_data"})
+    # table -> its id column
+    ROW_TABLES: ClassVar[dict[str, str]] = {
+        "garden_plots": "my_croft_id", "share_slots": "material_id", "owned_decor": "my_interior_id"
+    }
 
     def _validate_column(self, column: str) -> None:
         if column not in self.COLUMNS:
             raise ValueError(f"Invalid column name: '{column}'")
+
+    def _id_column(self, table: str) -> str:
+        if table not in self.ROW_TABLES:
+            raise ValueError(f"Invalid table name: '{table}'")
+        return self.ROW_TABLES[table]
 
     # ------------
     # id counters
@@ -85,7 +142,7 @@ class DBManager(SQLiteStore):
     # -------------
 
     def write_gscd(self, gscd: str) -> None:
-        """Create the row of a new Game Sync ID, with its starting garden, chest and Share Shelf.
+        """Create the row of a new Game Sync ID, with its starting garden, chest, and decor.
 
         Do nothing if the row exists.
         """
@@ -94,11 +151,12 @@ class DBManager(SQLiteStore):
             conn.execute("BEGIN IMMEDIATE")
             if conn.execute("SELECT 1 FROM player_saves WHERE gscd = ?", (gscd,)).fetchone():
                 return
-            croft_ids = self._next_id(conn, "my_croft_id", STARTING_PLOTS)
-            conn.execute(
-                "INSERT INTO player_saves (gscd, crop_data, chest_data, share_data) VALUES (?, ?, ?, ?)",
-                (gscd, _to_json(starting_garden(croft_ids)), _to_json(starting_chest()), _to_json(starting_shelf())),
-            )
+            conn.execute("INSERT INTO player_saves (gscd, chest_data) VALUES (?, ?)",
+                         (gscd, _to_json(starting_chest())))
+            for plot in starting_garden(self._next_id(conn, "my_croft_id", STARTING_PLOTS)):
+                self._insert_row(conn, "garden_plots", gscd, plot)
+            for decor in starting_decor(self._next_id(conn, "my_interior_id", len(STARTING_DECOR_IDS))):
+                self._insert_row(conn, "owned_decor", gscd, decor)
 
     def gscd_exists(self, gscd: str) -> bool:
         """Whether a Game Sync ID has a row."""
@@ -169,6 +227,55 @@ class DBManager(SQLiteStore):
             return None
         player_data, game_sync, sleeping_pokemon = (json.loads(column) if column else None for column in row)
         return player_data, game_sync, sleeping_pokemon
+
+    # ------------------------------------------
+    # Garden plots, Share Shelf items, and Decor
+    # ------------------------------------------
+
+    def read_rows(self, table: str, gscd: str) -> list[dict]:
+        """Return the rows `gscd` owns in one of ROW_TABLES, oldest id first, without the gscd column."""
+        return self._read_rows(self._conn, table, gscd)
+
+    def _read_rows(self, conn: sqlite3.Connection, table: str, gscd: str) -> list[dict]:
+        id_column = self._id_column(table)
+        rows = conn.execute(f"SELECT * FROM {table} WHERE gscd = ? ORDER BY {id_column}", (gscd,))
+        return [{key: value for key, value in dict(row).items() if key != "gscd"} for row in rows]
+
+    def update_rows(self, table: str, gscd: str, change: Callable[[list[dict]], None]) -> list[dict]:
+        """Read, modify, and write the rows `gscd` owns in one of ROW_TABLES.
+
+        `change` edits the list in place. Only the rows that changed are written, and
+        nothing is written if `change` raises. The edited rows are returned.
+        """
+        id_column = self._id_column(table)
+        conn = self._conn
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            before = {row[id_column]: row for row in self._read_rows(conn, table, gscd)}
+            rows = [dict(row) for row in before.values()]
+            change(rows)
+
+            # deleting first frees the positions that the new rows may take
+            kept = {row[id_column] for row in rows}
+            conn.executemany(f"DELETE FROM {table} WHERE {id_column} = ? AND gscd = ?",
+                             [(row_id, gscd) for row_id in before.keys() - kept])
+            for row in rows:
+                old = before.get(row[id_column])
+                if old is None:
+                    self._insert_row(conn, table, gscd, row)
+                elif row != old:
+                    columns = [column for column in row if column != id_column]
+                    conn.execute(
+                        f"UPDATE {table} SET {', '.join(f'{column} = ?' for column in columns)}"
+                        f" WHERE {id_column} = ? AND gscd = ?",
+                        [*(row[column] for column in columns), row[id_column], gscd])
+        return rows
+
+    @staticmethod
+    def _insert_row(conn: sqlite3.Connection, table: str, gscd: str, row: dict) -> None:
+        columns = ["gscd", *row]
+        conn.execute(f"INSERT INTO {table} ({', '.join(columns)}) VALUES ({', '.join('?' * len(columns))})",
+                     [gscd, *row.values()])
 
     # ----------
     # Dream Pals
