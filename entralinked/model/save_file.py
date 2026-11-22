@@ -1,6 +1,6 @@
 """Read what the Game Sync needs out of an uploaded Gen 5 save file.
 
-That is the Trainer data, the tucked-in Pokémon, and (Black 2 / White 2) the Medals.
+That is the Trainer data, the tucked-in Pokémon, the records, and (Black 2 / White 2) the Medals.
 
 Adapted from PKHeX.
 """
@@ -40,6 +40,7 @@ class Block(IntEnum):
 
     TRAINER_DATA = 27
     GLOBAL_LINK = 35  # Dream World data, with the tucked-in Pokémon and the Loblolly items
+    RECORDS = 38  # the counters behind the Trainer Card and the Game Sync rankings
     MISC = 52  # badges, money
     MEDAL = 68  # Black 2 / White 2 only
 
@@ -48,14 +49,124 @@ class Block(IntEnum):
 BLOCKS_BW = {
     Block.TRAINER_DATA: (0x19400, 0x0068),
     Block.GLOBAL_LINK:  (0x1D300, 0x01AC),
+    Block.RECORDS:      (0x1DA00, 0x01E0),
     Block.MISC:         (0x21200, 0x00EC)
 }
 BLOCKS_B2W2 = {
     Block.TRAINER_DATA: (0x19400, 0x00B0),
     Block.GLOBAL_LINK:  (0x1D300, 0x01AC),
+    Block.RECORDS:      (0x1DA00, 0x01E0),
     Block.MISC:         (0x21100, 0x00F0),
     Block.MEDAL:        (0x25300, 0x0498)
 }
+
+# Ids below FIRST_SMALL_RECORD are 4-byte counters.
+FIRST_SMALL_RECORD = 71
+RECORDS: dict[str, int] = {
+    "steps_walked":                  0,
+    "times_saved":                   1,
+    "first_clear_seconds":           2,  # play time when the game was first beaten, None before that
+    "bike_rides":                    3,
+    "battles":                       4,
+    "wild_battles":                  5,
+    "trainer_battles":               6,
+    "pokemon_caught":                7,
+    "pokemon_fished":                8,
+    "eggs_hatched":                  9,
+    "pokemon_evolved":               10,
+    "pokemon_center_rests":          11,
+    "wireless_trades":               12,
+    "wireless_battles":              13,
+    "wireless_battle_wins":          14,
+    "wireless_battle_losses":        15,
+    "wifi_trades":                   16,
+    "wifi_battles":                  17,
+    "wifi_battle_wins":              18,
+    "wifi_battle_losses":            19,
+    "wifi_battle_draws":             20,
+    "purchases":                     21,
+    "money_spent":                   22,
+    "tv_watched":                    23,
+    "day_care_deposits":             24,
+    "pokemon_defeated":              25,
+    "best_day_exp":                  26,
+    "today_exp":                     27,
+    "gts_deposits":                  28,
+    "mail_written":                  29,
+    "nicknames_given":               30,
+    "premier_balls_received":        31,
+    "stadium_battles":               32,
+    "bp_earned":                     33,
+    "bp_spent":                      34,
+    "infrared_trades":               36,
+    "infrared_battles":              37,
+    "infrared_battle_wins":          38,
+    "infrared_battle_losses":        39,
+    "fly_uses":                      42,
+    "trash_cans_checked":            43,
+    "dowsing_items_found":           44,
+    "pass_powers_used":              45,
+    "entralink_pokemon_caught":      46,
+    "super_effective_hits":          47,  # against wild Pokémon and Trainers
+    "battle_subway_challenges":      48,
+    "unovas_challenge_trainers_defeated": 49,  # in the Black Tower and White Treehollow
+    "xtransceiver_game_points":      50,
+    "best_pokestar_box_office":      51,
+    "total_pokestar_box_office":     52,
+    "random_match_disconnects":      53,
+    "hall_of_fame_entries":          71,
+    "home_rests":                    72,
+    "splash_uses":                   73,
+    "struggle_uses":                 74,
+    "no_effect_moves":               75,
+    "pokemon_fainted":               76,
+    "allies_hit":                    77,
+    "failed_escapes":                78,
+    "pokemon_fled":                  79,
+    "fishing_failed":                80,
+    "best_day_pokemon_defeated":     81,
+    "today_pokemon_defeated":        82,
+    "best_day_pokemon_caught":       83,
+    "today_pokemon_caught":          84,
+    "best_day_trainer_battles":      85,
+    "today_trainer_battles":         86,
+    "best_day_pokemon_evolved":      87,
+    "today_pokemon_evolved":         88,
+    "fossils_restored":              89,
+    "spin_trades":                   90,
+    "wonder_launcher_uses":          111,
+    "phenomenon_encounters":         112,
+    "feeling_checks":                113,
+    "musicals_played":               114,
+    "musicals_won":                  115,
+    "link_musicals_played":          116,
+    "link_musicals_won":             117,
+    "musical_points":                118,
+    "pokemon_tucked_in":             119,
+    "poke_transfers":                120,
+    "trial_house_battles":           121,
+    "trial_house_best_rank":         123,
+    "trial_house_best_score":        124,
+    "vending_machine_drinks":        125,
+    "royal_unova_rides":             126,
+    "join_avenue_visitors_guided":   127,
+    "join_avenue_shops_opened":      128,
+    "xtransceiver_games_played":     129,
+    "join_avenue_gifts_received":    130,
+    "pokestar_films_shot":           131,
+}
+# Records only Black 2 and White 2 have.
+B2W2_RECORDS = frozenset({
+    "fly_uses", "trash_cans_checked", "dowsing_items_found", "pass_powers_used", "entralink_pokemon_caught",
+    "super_effective_hits", "battle_subway_challenges", "unovas_challenge_trainers_defeated",
+    "xtransceiver_game_points", "best_pokestar_box_office", "total_pokestar_box_office",
+    "random_match_disconnects", "vending_machine_drinks", "royal_unova_rides", "join_avenue_visitors_guided",
+    "join_avenue_shops_opened", "xtransceiver_games_played", "join_avenue_gifts_received", "pokestar_films_shot",
+})
+
+TAG_MODE_COUNTS: dict[str, int] = {"tag_mode_thanks_received": 0x18, "tag_mode_people_met": 0x1C}
+B2W2_TAG_MODE_SHIFT = 4
+RECORD_COLUMNS = (*RECORDS, *TAG_MODE_COUNTS)
 
 
 class SaveFileError(ValueError):
@@ -222,6 +333,41 @@ class MedalBlock(DataReader):
         return date((raw_date & 0x7F) + cls.EPOCH_YEAR, (raw_date >> 7) & 0xF, raw_date >> 11)
 
 
+class RecordBlock(DataReader):
+    """The records block."""
+
+    LARGE_SIZE = 4
+    SMALL_SIZE = 2
+    SEED_SIZE = 4
+
+    def __init__(self, data: bytes) -> None:
+        seed = int.from_bytes(data[-self.SEED_SIZE:], "little")
+        decrypted = bytearray(data[self.LARGE_SIZE:-self.SEED_SIZE])
+        _crypt_array(decrypted, seed)
+        if sum(decrypted) & 0xFFFF != seed & 0xFFFF:
+            raise SaveFileError("The records don't match their checksum")
+        super().__init__(data[:self.LARGE_SIZE] + bytes(decrypted))
+
+    def get(self, record_id: int) -> int:
+        """Return the value of the record with this id."""
+        if record_id < FIRST_SMALL_RECORD:
+            return self.read_int(record_id * self.LARGE_SIZE, self.LARGE_SIZE)
+        offset = FIRST_SMALL_RECORD * self.LARGE_SIZE + (record_id - FIRST_SMALL_RECORD) * self.SMALL_SIZE
+        return self.read_int(offset, self.SMALL_SIZE)
+
+
+def _clear_time_seconds(clear_time: int) -> int | None:
+    """Convert a time stored as hours * 10000 + minutes * 100 + seconds.
+
+    Returns None if it's 0.
+    """
+    if clear_time == 0:
+        return None
+    hours, rest = divmod(clear_time, 10000)
+    minutes, seconds = divmod(rest, 100)
+    return hours * 3600 + minutes * 60 + seconds
+
+
 class Trainer(DataReader):
     """The player, from the trainer data block."""
 
@@ -337,6 +483,25 @@ class SaveFile:
     def global_link(self) -> GlobalLink:
         """The Dream World data."""
         return GlobalLink(self._block(Block.GLOBAL_LINK))
+
+    @property
+    def records(self) -> dict[str, int | None]:
+        """Every value in RECORD_COLUMNS by name. B2W2_RECORDS are None for a Black or White save.
+
+        Raise SaveFileError if the records block doesn't decrypt to a matching checksum.
+        """
+        block = RecordBlock(self._block(Block.RECORDS))
+        records: dict[str, int | None] = {
+            name: None if name in B2W2_RECORDS and not self.is_b2w2 else block.get(record_id)
+            for name, record_id in RECORDS.items()
+        }
+        records["first_clear_seconds"] = _clear_time_seconds(block.get(RECORDS["first_clear_seconds"]))
+
+        misc = DataReader(self._block(Block.MISC))
+        shift = B2W2_TAG_MODE_SHIFT if self.is_b2w2 else 0
+        for name, offset in TAG_MODE_COUNTS.items():
+            records[name] = misc.read_int(offset + shift, 4)
+        return records
 
     @property
     def medals(self) -> MedalBlock:

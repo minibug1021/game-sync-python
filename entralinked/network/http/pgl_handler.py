@@ -393,6 +393,7 @@ class PglHandler:
 
         self.player_manager.save_player(player)
         self._record_tuck_in(player)
+        self._store_records(player.gscd, rom_id, save)
         return PglStatus.OK, b""
 
     def handle_create_account(self, req: PglRequest) -> tuple[PglStatus, bytes]:
@@ -422,6 +423,18 @@ class PglHandler:
     # -------------------
     # Tuck-in data
     # -------------------
+
+    @staticmethod
+    def _store_records(gscd: str, rom_id: int, save: SaveFile) -> None:
+        """Keep the records from an uploaded save."""
+        try:
+            records = save.records
+        except SaveFileError:
+            logger.warning("Could not read the records uploaded by player %s", gscd, exc_info=True)
+            return
+
+        trainer = save.trainer
+        db.add_record_upload(gscd, int(datetime.now().timestamp()), rom_id, trainer.country, trainer.region, records)
 
     def _record_tuck_in(self, player: Player) -> None:
         """Update the member fields that the Dream World server keeps about a tuck-in."""

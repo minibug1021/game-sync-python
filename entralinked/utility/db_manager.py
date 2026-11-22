@@ -13,12 +13,18 @@ from ..model.player.starting_save import (
     starting_decor,
     starting_garden,
 )
+from ..model.save_file import B2W2_RECORDS, RECORD_COLUMNS
 from ..paths import SAVE_DIR
 from .sqlite_store import SQLiteStore
 
 
 def _to_json(data: object) -> str:
     return json.dumps(data, indent=2, ensure_ascii=False)
+
+
+def _record_column(name: str) -> str:
+    nullable = name in B2W2_RECORDS or name == "first_clear_seconds"
+    return f"{name} INTEGER" if nullable else f"{name} INTEGER NOT NULL"
 
 
 class DBManager(SQLiteStore):
@@ -98,6 +104,16 @@ class DBManager(SQLiteStore):
             y INTEGER
         )""",
         "CREATE INDEX IF NOT EXISTS owned_decor_gscd ON owned_decor (gscd)",
+        f"""
+        CREATE TABLE IF NOT EXISTS record_uploads (
+            gscd TEXT NOT NULL,
+            uploaded_at INTEGER NOT NULL,
+            rom_id INTEGER NOT NULL,
+            country INTEGER NOT NULL,
+            region INTEGER NOT NULL,
+            {", ".join(_record_column(name) for name in RECORD_COLUMNS)},
+            PRIMARY KEY (gscd, uploaded_at)
+        )""",
     )
     COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "chest_data"})
     # table -> its id column
@@ -338,6 +354,28 @@ class DBManager(SQLiteStore):
         with self._conn:
             self._conn.execute(
                 "DELETE FROM dream_pals WHERE (from_gscd, to_gscd) IN ((?, ?), (?, ?))", (gscd, other, other, gscd))
+
+    # ------------
+    # records
+    # ------------
+
+    def add_record_upload(self, gscd: str, uploaded_at: int, rom_id: int, country: int, region: int,
+                          records: dict[str, int | None]) -> None:
+        """Store the records from a save the player uploaded at `uploaded_at`.
+
+        `records` is SaveFile.records.
+        """
+        columns = ["gscd", "uploaded_at", "rom_id", "country", "region", *RECORD_COLUMNS]
+        values = [gscd, uploaded_at, rom_id, country, region, *(records[name] for name in RECORD_COLUMNS)]
+        with self._conn:
+            self._conn.execute(
+                f"INSERT OR REPLACE INTO record_uploads ({', '.join(columns)}) VALUES ({', '.join('?' * len(columns))})",
+                values)
+
+    def read_record_uploads(self, gscd: str) -> list[dict]:
+        """Return every record upload of a player, oldest first."""
+        rows = self._conn.execute("SELECT * FROM record_uploads WHERE gscd = ? ORDER BY uploaded_at", (gscd,))
+        return [dict(row) for row in rows]
 
     # ------------------
     # Nintendo WFC users
