@@ -37,6 +37,7 @@ HEADER_SIZE = 128
 # Fixed sizes of the data sent when a Pokémon wakes up
 MAX_ENCOUNTERS = 10
 ENCOUNTER_SIZE = 8
+FEMALE_FORM_SPECIES = frozenset({592, 593})  # Frillish and Jellicent
 MAX_ITEMS = 20
 LOBLOLLY_ITEM_NAME_SIZE = 24  # 12 UTF-16 characters
 MAX_VISITORS = 12
@@ -106,12 +107,22 @@ def _padded_name(name: str, max_name_bytes: int, field_size: int) -> bytes:
     return name_bytes + b"\xff" * (field_size - len(name_bytes))
 
 
+def _form_no(pokemon: Pokemon) -> int:
+    """Return the Pokémon's form.
+
+    Frillish and Jellicent have their female art as "form 1" on the PGL site.
+    """
+    if pokemon.natdex in FEMALE_FORM_SPECIES and pokemon.gender == 1:
+        return 1
+    return pokemon.form
+
+
 def _pkmn_info(pokemon: Pokemon) -> PkmnInfo:
     type1, type2 = pokemon.types
 
     return PkmnInfo(
         pokemon_no=pokemon.natdex,
-        form_no=pokemon.form,
+        form_no=_form_no(pokemon),
         type1=type1,
         type2=type2,
         pokemon_nickname=pokemon.nickname,
