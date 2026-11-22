@@ -65,13 +65,16 @@ class PglStatus(IntEnum):
     """The status code at the start of a response."""
 
     OK = 0
-    UNAUTHORIZED = 1  # the Game Sync ID isn't registered
-    DUPLICATE_GAME_SYNC_ID = 2
-    REGISTRATION_ERROR = 3
-    SAVE_DATA_ERROR = 4  # the uploaded save couldn't be used
-    NO_SAVE_DATA = 5
-    INVALID_GAME_SYNC_ID = 8  # also makes the game offer to create an account
-    NOT_BLACK_OR_WHITE = 10
+    STORAGE_FULL = 1  # we also send it when the Game Sync ID isn't registered
+    ACCOUNT_EXISTS = 2  # the game treats this as success when creating an account
+    CORRUPT_UPLOAD = 3
+    REJECTED_UPLOAD = 4  # the game reads this as an illegitimate upload
+    NOTHING_STORED = 5
+    SERVICE_ENDED = 6  # the game says the service has been discontinued
+    BAD_TOKEN = 7
+    UNREGISTERED = 8  # also makes the game offer to create an account
+    OTHER_ERROR = 9
+    B2W2_SAVE = 10  # only for where the Game Sync ID belongs to a B2W2 save
 
 
 @dataclass
@@ -260,7 +263,7 @@ class PglHandler:
     def handle_get_sleepy_list(self, req: PglRequest) -> tuple[PglStatus, bytes]:
         """`sleepily.bitlist`: which species may be tucked in."""
         if req.gscd is None or not db.gscd_exists(req.gscd):
-            return PglStatus.UNAUTHORIZED, b""
+            return PglStatus.STORAGE_FULL, b""
         return PglStatus.OK, SLEEPY_BIT_LIST
 
     def handle_get_account_status(self, req: PglRequest) -> tuple[PglStatus, bytes]:
@@ -268,7 +271,7 @@ class PglHandler:
         player = self.player_manager.load_player(req.gscd)
 
         if player is None:
-            return PglStatus.INVALID_GAME_SYNC_ID, b""
+            return PglStatus.UNREGISTERED, b""
         return PglStatus.OK, struct.pack("<h", player.play_status)
 
     def handle_download_save_data(self, req: PglRequest) -> tuple[PglStatus, bytes]:
@@ -276,7 +279,7 @@ class PglHandler:
         player = self.player_manager.load_player(req.gscd)
 
         if player is None:
-            return PglStatus.UNAUTHORIZED, b""
+            return PglStatus.STORAGE_FULL, b""
 
         logger.info("Player %s is downloading save data", player.gscd)
 
@@ -315,10 +318,10 @@ class PglHandler:
         player = self.player_manager.load_player(req.gscd)
 
         if player is None:
-            return PglStatus.INVALID_GAME_SYNC_ID, b""
+            return PglStatus.UNREGISTERED, b""
         if is_b2w2(player.rom_id):
-            return PglStatus.NOT_BLACK_OR_WHITE, b""
-        return PglStatus.NO_SAVE_DATA, b""
+            return PglStatus.B2W2_SAVE, b""
+        return PglStatus.NOTHING_STORED, b""
 
     # -------------------
     # POST handlers
@@ -329,7 +332,7 @@ class PglHandler:
         player = self.player_manager.load_player(req.gscd)
 
         if player is None:
-            return PglStatus.UNAUTHORIZED, b""
+            return PglStatus.STORAGE_FULL, b""
 
         save_data.update_member({"is_downloaded": 1}, player.gscd)
 
@@ -344,7 +347,7 @@ class PglHandler:
         player = self.player_manager.load_player(req.gscd)
 
         if player is None:
-            return PglStatus.UNAUTHORIZED, b""
+            return PglStatus.STORAGE_FULL, b""
 
         logger.info("Player %s is uploading save data", player.gscd)
 
@@ -367,7 +370,7 @@ class PglHandler:
                 medals, favorite_medal = save.medals.medal_list, save.medals.favorite_medal
         except (SaveFileError, IndexError, ValueError):
             logger.exception("Could not read the save data uploaded by player %s", player.gscd)
-            return PglStatus.SAVE_DATA_ERROR, b""
+            return PglStatus.REJECTED_UPLOAD, b""
 
         if player.rom_id is not None and rom_id != player.rom_id:
             logger.warning("Player %s's game version changed from %s to %s", player.gscd, player.rom_id, rom_id)
@@ -404,15 +407,15 @@ class PglHandler:
             gscd = gsid_utility.gsid_to_gscd(int(raw_body))
         except ValueError:
             logger.debug("[account.createdata] Rejecting invalid Game Sync ID: %s", raw_body)
-            return PglStatus.INVALID_GAME_SYNC_ID, b""
+            return PglStatus.UNREGISTERED, b""
 
         return self._register(gscd, None, None), b""
 
     def _register(self, gscd: str | None, rom_id: int | None, langcode: int | None) -> PglStatus:
         if gscd is None or not gsid_utility.is_valid_gscd(gscd):
-            return PglStatus.INVALID_GAME_SYNC_ID
+            return PglStatus.UNREGISTERED
         if db.gscd_exists(gscd):
-            return PglStatus.DUPLICATE_GAME_SYNC_ID
+            return PglStatus.ACCOUNT_EXISTS
         self.player_manager.register_player(gscd, rom_id, langcode)
         return PglStatus.OK
 

@@ -171,7 +171,7 @@ class Player:
             "gsid":             self.gsid,
             "alter_rom_name":   "Shiro*" if self.rom_id in (Rom.WHITE, Rom.WHITE_2) else "Kuro*",
             "play_status":      self.play_status.value,
-            "sleeping_flag":    0 if self.play_status == PlayerStatus.AWAKE else 1,
+            "sleeping_flag":    save_data.sleeping_flag(self.play_status),
             "pokemon_no":       dreamer.pokemon_no if dreamer else None,
             "pokemon_name":     (text.lookup_str("pokemon", dreamer.pokemon_no, game_language(self.langcode))
                                  if dreamer else None),
