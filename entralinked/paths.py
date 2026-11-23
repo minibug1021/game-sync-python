@@ -19,3 +19,5 @@ CUSTOMIZE_PATH = REPO_ROOT / "json_data" / "customize.json"
 RAW_TEXT_DIR = REPO_ROOT / "raw_text"  # <language>/medal.txt, loblolly.txt, ...
 # Shared with the Dream World server (config.SAVE_DIR)
 SAVE_DIR = Path(os.environ.get("DW_SAVE_DIR", REPO_ROOT / "save_data"))
+# Each trainer's most recent uploaded save
+UPLOADED_SAVES_DIR = Path(os.environ.get("DW_UPLOADED_SAVES_DIR", REPO_ROOT / "saves"))

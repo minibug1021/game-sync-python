@@ -375,6 +375,7 @@ class Trainer(DataReader):
         super().__init__(data)
 
         self.name = self.read_str(0x4, 0x10)
+        self.trainer_id = self.read_int(0x14, 2)
         self.country = self.read_int(0x1C, 1)
         self.region = self.read_int(0x1D, 1)
         self.language = self.read_int(0x1E, 1)
@@ -454,6 +455,8 @@ class SaveFile:
     """An uploaded save file (Black, White, Black 2, or White 2)."""
 
     MIN_SIZE = 0x24000  # enough to hold every block of a Black / White save
+    MAIN_SAVE_SIZE_BW = 0x24000
+    MAIN_SAVE_SIZE_B2W2 = 0x26000
     BW_GAME_VERSION_OFFSET = BLOCKS_BW[Block.TRAINER_DATA][0] + 0x1F
 
     def __init__(self, data: bytes) -> None:
@@ -464,6 +467,10 @@ class SaveFile:
         # The Trainer block starts at the same place in every version, so its game field
         # can be read before knowing which block table applies.
         self.is_b2w2 = data[self.BW_GAME_VERSION_OFFSET] not in (Rom.WHITE, Rom.BLACK)
+
+    def main_save(self) -> bytes:
+        """Return the main save data."""
+        return self._data[:self.MAIN_SAVE_SIZE_B2W2 if self.is_b2w2 else self.MAIN_SAVE_SIZE_BW]
 
     def _block(self, block: Block) -> bytes:
         offset, length = (BLOCKS_B2W2 if self.is_b2w2 else BLOCKS_BW)[block]

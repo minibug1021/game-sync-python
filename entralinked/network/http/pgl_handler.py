@@ -12,8 +12,8 @@ from flask import Blueprint, g, request
 from flask.typing import ResponseReturnValue
 
 from utils import save_data
-from utils.constants import PlayerStatus, is_b2w2
-from utils.language import game_language
+from utils.constants import PlayerStatus, Rom, is_b2w2
+from utils.language import LANGCODES, game_language
 
 from ...context import Context
 from ...model.avenue.avenue_data import AvenueVisitor
@@ -21,9 +21,10 @@ from ...model.pkmn.pkmn_info import PkmnInfo, calculate_is_shiny
 from ...model.player.dream_data import DreamEncounter, DreamItem
 from ...model.player.player import Player
 from ...model.save_file import Pokemon, SaveFile, SaveFileError
-from ...paths import RAW_TEXT_DIR
+from ...paths import RAW_TEXT_DIR, UPLOADED_SAVES_DIR
 from ...utility import gsid_utility
 from ...utility.db_manager import db
+from ...utility.save_archive import store_save
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ HEADER_SIZE = 128
 MAX_ENCOUNTERS = 10
 ENCOUNTER_SIZE = 8
 FEMALE_FORM_SPECIES = frozenset({592, 593})  # Frillish and Jellicent
+ROM_LETTERS: dict[int, str] = {Rom.BLACK: "B", Rom.WHITE: "W", Rom.BLACK_2: "B2", Rom.WHITE_2: "W2"}
 MAX_ITEMS = 20
 LOBLOLLY_ITEM_NAME_SIZE = 24  # 12 UTF-16 characters
 MAX_VISITORS = 12
@@ -115,6 +117,16 @@ def _form_no(pokemon: Pokemon) -> int:
     if pokemon.natdex in FEMALE_FORM_SPECIES and pokemon.gender == 1:
         return 1
     return pokemon.form
+
+
+def _store_save(data: bytes, rom_id: int, langcode: int, trainer_id: int) -> None:
+    """Write a save to UPLOADED_SAVES_DIR."""
+    language = LANGCODES.get(langcode, str(langcode)).upper()
+    name = f"{language}_{ROM_LETTERS.get(rom_id, str(rom_id))}_{trainer_id:05}.sav"
+    try:
+        store_save(UPLOADED_SAVES_DIR, name, data)
+    except OSError:
+        logger.exception("Could not store the uploaded save %s in %s", name, UPLOADED_SAVES_DIR)
 
 
 def _pkmn_info(pokemon: Pokemon) -> PkmnInfo:
@@ -405,6 +417,8 @@ class PglHandler:
         self.player_manager.save_player(player)
         self._record_tuck_in(player)
         self._store_records(player.gscd, rom_id, save)
+        if self.configuration.copy_saves:
+            _store_save(save.main_save(), rom_id, langcode, trainer.trainer_id)
         return PglStatus.OK, b""
 
     def handle_create_account(self, req: PglRequest) -> tuple[PglStatus, bytes]:

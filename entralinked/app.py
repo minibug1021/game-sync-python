@@ -16,8 +16,9 @@ from .model.user.user_manager import UserManager
 from .network.dns.server import DnsServer
 from .network.gamespy.server import GameSpyServer
 from .network.http.http_server import HTTP_PORT, HttpServer
-from .paths import CONFIG_PATH
+from .paths import CONFIG_PATH, UPLOADED_SAVES_DIR
 from .utility.db_manager import db
+from .utility.save_archive import ARCHIVE_INTERVAL, archive_loose_saves
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,15 @@ def resolve_host_address(configuration: Configuration) -> str:
     return socket.gethostbyname(configuration.host_name)
 
 
+def archive_saves() -> None:
+    """Move the saves into the archive."""
+    try:
+        if count := archive_loose_saves(UPLOADED_SAVES_DIR):
+            logger.info("Archived %d uploaded saves", count)
+    except Exception:
+        logger.exception("Could not archive the uploaded saves in %s", UPLOADED_SAVES_DIR)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Build the command-line options."""
     parser = argparse.ArgumentParser(description="Game Sync server")
@@ -48,6 +58,9 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--http-port", type=int, default=HTTP_PORT,
                         help=f"the port for plain HTTP (default {HTTP_PORT}, which the DS uses). Change it only "
                              "when a web server on this machine passes port 80 on to this one")
+    parser.add_argument("--copy-saves", action="store_true",
+                        help='copy each uploaded save to the saves folder and add the copies to saves.zpaq '
+                             'once an hour.')
     return parser
 
 
@@ -68,6 +81,8 @@ def main() -> int:
     configuration = load_configuration(CONFIG_PATH)
     if args.host:
         configuration = dataclasses.replace(configuration, host_name=args.host)
+    if args.copy_saves:
+        configuration = dataclasses.replace(configuration, copy_saves=True)
     logger.info("Using configuration %s", configuration)
 
     context = Context(configuration, UserManager(), PlayerManager(), DlcList())
@@ -86,8 +101,11 @@ def main() -> int:
         logger.info("Startup complete! Took %d milliseconds", (time.perf_counter() - started_at) * 1000)
         logger.info("Configure your DS to use the following DNS server: %s", host_address)
 
+        next_archive = time.monotonic()  # at startup, then every ARCHIVE_INTERVAL
         while not stop_requested.wait(1.0):  # in short waits, so that Windows gets to deliver Ctrl+C
-            pass
+            if configuration.copy_saves and time.monotonic() >= next_archive:
+                archive_saves()
+                next_archive = time.monotonic() + ARCHIVE_INTERVAL
     except Exception:
         logger.exception("Failed to start servers")
         exit_code = 1
