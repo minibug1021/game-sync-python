@@ -26,6 +26,9 @@ def _record_column(name: str) -> str:
     nullable = name in B2W2_RECORDS or name == "first_clear_seconds"
     return f"{name} INTEGER" if nullable else f"{name} INTEGER NOT NULL"
 
+MEMBER_SAVEDATA_ID = "json_extract(player_data, '$.member.member_savedata_id')"
+FRIEND_CODE = "json_extract(game_sync, '$.friend_code')"
+
 
 class DBManager(SQLiteStore):
     """Reads and writes player saves (keyed by gscd) and Nintendo WFC users."""
@@ -39,6 +42,8 @@ class DBManager(SQLiteStore):
             game_sync TEXT,
             chest_data TEXT
         )""",
+        f"CREATE INDEX IF NOT EXISTS player_saves_member_savedata_id ON player_saves ({MEMBER_SAVEDATA_ID})",
+        f"CREATE INDEX IF NOT EXISTS player_saves_friend_code ON player_saves ({FRIEND_CODE})",
         """
         CREATE TABLE IF NOT EXISTS wfc_users (
             user_id TEXT PRIMARY KEY,
@@ -104,16 +109,32 @@ class DBManager(SQLiteStore):
             y INTEGER
         )""",
         "CREATE INDEX IF NOT EXISTS owned_decor_gscd ON owned_decor (gscd)",
+        # One row per player, from their last uploaded save. Older uploads are in saves.zpaq.
         f"""
         CREATE TABLE IF NOT EXISTS record_uploads (
             gscd TEXT NOT NULL,
             uploaded_at INTEGER NOT NULL,
             rom_id INTEGER NOT NULL,
-            country INTEGER NOT NULL,
-            region INTEGER NOT NULL,
+            country INTEGER,
             {", ".join(_record_column(name) for name in RECORD_COLUMNS)},
-            PRIMARY KEY (gscd, uploaded_at)
+            PRIMARY KEY (gscd)
         )""",
+        # One row per Friend Code on a player's Pal Pad from their last uploaded save.
+        """
+        CREATE TABLE IF NOT EXISTS pal_pad (
+            gscd TEXT NOT NULL,
+            friend_code INTEGER NOT NULL,
+            PRIMARY KEY (gscd, friend_code)
+        )""",
+        "CREATE INDEX IF NOT EXISTS pal_pad_friend_code ON pal_pad (friend_code)",
+        # One row per Friend Code on a player's Trade Pal list from their last uploaded save.
+        """
+        CREATE TABLE IF NOT EXISTS trade_pals (
+            gscd TEXT NOT NULL,
+            friend_code INTEGER NOT NULL,
+            PRIMARY KEY (gscd, friend_code)
+        )""",
+        "CREATE INDEX IF NOT EXISTS trade_pals_friend_code ON trade_pals (friend_code)",
         # One row per player who visited someone's island.
         """
         CREATE TABLE IF NOT EXISTS footprints (
@@ -191,9 +212,12 @@ class DBManager(SQLiteStore):
     def find_gscd(self, member_savedata_id: int) -> str | None:
         """The Game Sync ID of the save with this member_savedata_id, if there is one."""
         row = self._conn.execute(
-            "SELECT gscd FROM player_saves WHERE json_extract(player_data, '$.member.member_savedata_id') = ?",
-            (member_savedata_id,),
-        ).fetchone()
+            f"SELECT gscd FROM player_saves WHERE {MEMBER_SAVEDATA_ID} = ?", (member_savedata_id,)).fetchone()
+        return row["gscd"] if row else None
+
+    def find_gscd_by_friend_code(self, friend_code: int) -> str | None:
+        """The Game Sync ID of the save whose last Game Sync had this Friend Code, if there is one."""
+        row = self._conn.execute(f"SELECT gscd FROM player_saves WHERE {FRIEND_CODE} = ?", (friend_code,)).fetchone()
         return row["gscd"] if row else None
 
     def get_all_gscds(self) -> list[str]:
@@ -401,23 +425,54 @@ class DBManager(SQLiteStore):
     # records
     # ------------
 
-    def add_record_upload(self, gscd: str, uploaded_at: int, rom_id: int, country: int, region: int,
+    def add_record_upload(self, gscd: str, uploaded_at: int, rom_id: int, country: int | None,
                           records: dict[str, int | None]) -> None:
-        """Store the records from a save the player uploaded at `uploaded_at`.
+        """Store the records from a save the player uploaded at `uploaded_at`, replacing their last ones.
 
-        `records` is SaveFile.records.
+        `country` is the PGL country of the account the save is linked to, or None if it
+        isn't linked to one yet. `records` is SaveFile.records.
         """
-        columns = ["gscd", "uploaded_at", "rom_id", "country", "region", *RECORD_COLUMNS]
-        values = [gscd, uploaded_at, rom_id, country, region, *(records[name] for name in RECORD_COLUMNS)]
+        columns = ["gscd", "uploaded_at", "rom_id", "country", *RECORD_COLUMNS]
+        values = [gscd, uploaded_at, rom_id, country, *(records[name] for name in RECORD_COLUMNS)]
         with self._conn:
             self._conn.execute(
                 f"INSERT OR REPLACE INTO record_uploads ({', '.join(columns)}) VALUES ({', '.join('?' * len(columns))})",
                 values)
 
-    def read_record_uploads(self, gscd: str) -> list[dict]:
-        """Return every record upload of a player, oldest first."""
-        rows = self._conn.execute("SELECT * FROM record_uploads WHERE gscd = ? ORDER BY uploaded_at", (gscd,))
-        return [dict(row) for row in rows]
+    def read_record_upload(self, gscd: str) -> dict | None:
+        """Return the records from a player's last uploaded save, or None if they never uploaded one."""
+        row = self._conn.execute("SELECT * FROM record_uploads WHERE gscd = ?", (gscd,)).fetchone()
+        return dict(row) if row else None
+
+    # -----------------------
+    # Pal Pad and Trade Pals
+    # -----------------------
+
+    def _set_friend_codes(self, table: str, gscd: str, friend_codes: list[int]) -> None:
+        with self._conn:
+            self._conn.execute(f"DELETE FROM {table} WHERE gscd = ?", (gscd,))
+            self._conn.executemany(f"INSERT OR IGNORE INTO {table} (gscd, friend_code) VALUES (?, ?)",
+                                   [(gscd, code) for code in friend_codes])
+
+    def _read_friend_codes(self, table: str, gscd: str) -> list[int]:
+        rows = self._conn.execute(f"SELECT friend_code FROM {table} WHERE gscd = ? ORDER BY rowid", (gscd,))
+        return [row["friend_code"] for row in rows]
+
+    def set_pal_pad(self, gscd: str, friend_codes: list[int]) -> None:
+        """Replace the Friend Codes on a player's Pal Pad."""
+        self._set_friend_codes("pal_pad", gscd, friend_codes)
+
+    def read_pal_pad(self, gscd: str) -> list[int]:
+        """Return the Friend Codes on a player's Pal Pad."""
+        return self._read_friend_codes("pal_pad", gscd)
+
+    def set_trade_pals(self, gscd: str, friend_codes: list[int]) -> None:
+        """Replace the Friend Codes on a player's Trade Pal list."""
+        self._set_friend_codes("trade_pals", gscd, friend_codes)
+
+    def read_trade_pals(self, gscd: str) -> list[int]:
+        """Return the Friend Codes on a player's Trade Pal list."""
+        return self._read_friend_codes("trade_pals", gscd)
 
     # ------------------
     # Nintendo WFC users

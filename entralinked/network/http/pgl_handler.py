@@ -12,6 +12,7 @@ from flask import Blueprint, g, request
 from flask.typing import ResponseReturnValue
 
 from utils import save_data
+from utils.account_manager import accounts
 from utils.constants import PlayerStatus, Rom, is_b2w2
 from utils.language import LANGCODES, game_language
 
@@ -119,10 +120,10 @@ def _form_no(pokemon: Pokemon) -> int:
     return pokemon.form
 
 
-def _store_save(data: bytes, rom_id: int, langcode: int, trainer_id: int) -> None:
+def _store_save(data: bytes, rom_id: int, langcode: int, gscd: str) -> None:
     """Write a save to UPLOADED_SAVES_DIR."""
     language = LANGCODES.get(langcode, str(langcode)).upper()
-    name = f"{language}_{ROM_LETTERS.get(rom_id, str(rom_id))}_{trainer_id:05}.sav"
+    name = f"{language}_{ROM_LETTERS.get(rom_id, str(rom_id))}_{gscd}.sav"
     try:
         store_save(UPLOADED_SAVES_DIR, name, data)
     except OSError:
@@ -406,6 +407,7 @@ class PglHandler:
         player.hours_played = trainer.played_hours
         player.minutes_played = trainer.played_minutes
         player.loblolly_decor = save.global_link.loblolly_decor
+        player.friend_code = save.pal_pad.friend_code
 
         player.play_status = PlayerStatus.PLAY_READY
         player.rom_id = rom_id
@@ -417,8 +419,10 @@ class PglHandler:
         self.player_manager.save_player(player)
         self._record_tuck_in(player)
         self._store_records(player.gscd, rom_id, save)
+        db.set_pal_pad(player.gscd, save.pal_pad.friend_codes)
+        db.set_trade_pals(player.gscd, save.trade_pals.friend_codes)
         if self.configuration.copy_saves:
-            _store_save(save.main_save(), rom_id, langcode, trainer.trainer_id)
+            _store_save(save.main_save(), rom_id, langcode, player.gscd)
         return PglStatus.OK, b""
 
     def handle_create_account(self, req: PglRequest) -> tuple[PglStatus, bytes]:
@@ -458,8 +462,8 @@ class PglHandler:
             logger.warning("Could not read the records uploaded by player %s", gscd, exc_info=True)
             return
 
-        trainer = save.trainer
-        db.add_record_upload(gscd, int(datetime.now().timestamp()), rom_id, trainer.country, trainer.region, records)
+        country = accounts.get_country_id(accounts.get_gscd_owner(gscd))
+        db.add_record_upload(gscd, int(datetime.now().timestamp()), rom_id, country, records)
 
     def _record_tuck_in(self, player: Player) -> None:
         """Update the member fields that the Dream World server keeps about a tuck-in."""

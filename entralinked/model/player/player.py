@@ -94,7 +94,7 @@ def new_player_data(member_id: int) -> dict:
 # Player attributes stored under the same name in player_data["member"]
 MEMBER_FIELDS = ("rom_id", "langcode", "player_name", "trainer_gender", "player_badge_num")
 GAME_SYNC_FIELDS = ("levels_gained", "country", "region", "hours_played", "minutes_played", "cgear_skin",
-                    "dex_skin", "musical", "encounters", "items", "avenue_visitors", "loblolly_decor")
+                    "dex_skin", "musical", "encounters", "items", "avenue_visitors", "loblolly_decor", "friend_code")
 
 
 @dataclass
@@ -115,6 +115,7 @@ class Player:
     hours_played: int = 0
     minutes_played: int = 0
     loblolly_decor: int | None = None  # the id of the Loblolly item picked for the player's room
+    friend_code: int | None = None  # None if the game has never connected to Nintendo WFC
     # Only Black 2 / White 2 have Medals. The pages that show them look up their names
     # in raw_text/<lang>/medal.txt.
     medals: list[int] = field(default_factory=list)  # the obtained Medal ids, newest first

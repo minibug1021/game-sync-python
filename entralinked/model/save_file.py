@@ -1,9 +1,11 @@
 """Read what the Game Sync needs out of an uploaded Gen 5 save file.
 
-That is the Trainer data, the tucked-in Pokémon, the records, and (Black 2 / White 2) the Medals.
+That is the Trainer data, the tucked-in Pokémon, the records, the Pal Pad, the Trade Pals, and
+(Black 2 / White 2) the Medals.
 
 Adapted from PKHeX.
 """
+import hashlib
 import json
 import struct
 from datetime import date
@@ -39,6 +41,8 @@ class Block(IntEnum):
     """The save blocks with data used by the Game Sync server."""
 
     TRAINER_DATA = 27
+    PAL_PAD = 30  # the player's Nintendo WFC profile and the friends registered on the Pal Pad
+    TRADE_PALS = 31  # the last 100 players the player traded Pokémon with
     GLOBAL_LINK = 35  # Dream World data, with the tucked-in Pokémon and the Loblolly items
     RECORDS = 38  # the counters behind the Trainer Card and the Game Sync rankings
     MISC = 52  # badges, money
@@ -48,12 +52,16 @@ class Block(IntEnum):
 # Location of each block in the save file as (offset, length).
 BLOCKS_BW = {
     Block.TRAINER_DATA: (0x19400, 0x0068),
+    Block.PAL_PAD:      (0x1AA00, 0x07C4),
+    Block.TRADE_PALS:   (0x1B200, 0x0D54),
     Block.GLOBAL_LINK:  (0x1D300, 0x01AC),
     Block.RECORDS:      (0x1DA00, 0x01E0),
     Block.MISC:         (0x21200, 0x00EC)
 }
 BLOCKS_B2W2 = {
     Block.TRAINER_DATA: (0x19400, 0x00B0),
+    Block.PAL_PAD:      (0x1AA00, 0x07C4),
+    Block.TRADE_PALS:   (0x1B200, 0x0D54),
     Block.GLOBAL_LINK:  (0x1D300, 0x01AC),
     Block.RECORDS:      (0x1DA00, 0x01E0),
     Block.MISC:         (0x21100, 0x00F0),
@@ -375,7 +383,6 @@ class Trainer(DataReader):
         super().__init__(data)
 
         self.name = self.read_str(0x4, 0x10)
-        self.trainer_id = self.read_int(0x14, 2)
         self.country = self.read_int(0x1C, 1)
         self.region = self.read_int(0x1D, 1)
         self.language = self.read_int(0x1E, 1)
@@ -383,6 +390,69 @@ class Trainer(DataReader):
         self.gender = 0 if self.read_int(0x21, 1) == 0 else 1  # 0 = male, 1 = female
         self.played_hours = self.read_int(0x24, 2)
         self.played_minutes = self.read_int(0x26, 1)
+
+
+# Every Gen 5 game stores this game code in its Nintendo WFC user data.
+FRIEND_CODE_GAME_CODE = b"JARI"
+
+
+def friend_code(profile_id: int) -> int:
+    """Return the 12-digit Friend Code for a Nintendo WFC profile."""
+    checksum = hashlib.md5(struct.pack("<I", profile_id) + FRIEND_CODE_GAME_CODE).digest()[0] >> 1
+    return checksum << 32 | profile_id
+
+
+class PalPad(DataReader):
+    """The Pal Pad block."""
+
+    PROFILE_ID_OFFSET = 0x1C
+    FRIENDS_OFFSET = 0x40
+    FRIEND_SIZE = 12
+    FRIEND_SLOTS = 32
+    FRIEND_KEY = 2  # a Friend Code typed in on the Pal Pad
+    GS_PROFILE_ID = 3  # a friend whose Friend Code was confirmed online
+
+    @property
+    def friend_code(self) -> int | None:
+        """The player's Friend Code.
+
+        None if the game has never connected to Nintendo WFC.
+        """
+        profile_id = self.read_int(self.PROFILE_ID_OFFSET, 4)
+        return friend_code(profile_id) if profile_id else None
+
+    @property
+    def friend_codes(self) -> list[int]:
+        """The Friend Codes on the Pal Pad."""
+        codes = []
+        for slot in range(self.FRIEND_SLOTS):
+            offset = self.FRIENDS_OFFSET + slot * self.FRIEND_SIZE
+            friend_type = (self.read_int(offset, 4) >> 11) & 0b11
+            profile_id = self.read_int(offset + 4, 4)
+            if friend_type in (self.FRIEND_KEY, self.GS_PROFILE_ID) and profile_id:
+                codes.append(friend_code(profile_id))
+        return list(dict.fromkeys(codes))
+
+
+class TradePals(DataReader):
+    """The Trade Pals block."""
+
+    ENTRY_SIZE = 32
+    ENTRIES = 100
+    PROFILE_ID_OFFSET = 0x14
+    GAME_OFFSET = 0x1B
+    GEN_5_GAMES = frozenset({Rom.WHITE, Rom.BLACK, Rom.WHITE_2, Rom.BLACK_2})
+
+    @property
+    def friend_codes(self) -> list[int]:
+        """The Friend Codes of the players on the Trade Pal list."""
+        codes = []
+        for entry in range(self.ENTRIES):
+            offset = entry * self.ENTRY_SIZE
+            profile_id = self.read_int(offset + self.PROFILE_ID_OFFSET, 4)
+            if profile_id and self._data[offset + self.GAME_OFFSET] in self.GEN_5_GAMES:
+                codes.append(friend_code(profile_id))
+        return list(dict.fromkeys(codes))
 
 
 class GlobalLink(DataReader):
@@ -480,6 +550,16 @@ class SaveFile:
     def trainer(self) -> Trainer:
         """The player."""
         return Trainer(self._block(Block.TRAINER_DATA))
+
+    @property
+    def pal_pad(self) -> PalPad:
+        """The player's Friend Code and the Friend Codes on their Pal Pad."""
+        return PalPad(self._block(Block.PAL_PAD))
+
+    @property
+    def trade_pals(self) -> TradePals:
+        """The Friend Codes of the players the player has traded with."""
+        return TradePals(self._block(Block.TRADE_PALS))
 
     @property
     def num_badges(self) -> int:
