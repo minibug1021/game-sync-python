@@ -2,6 +2,7 @@
 import json
 import sqlite3
 from collections.abc import Callable
+from datetime import datetime, timedelta
 from typing import ClassVar
 
 from utils.constants import DreamPalStatus
@@ -28,6 +29,9 @@ def _record_column(name: str) -> str:
 
 MEMBER_SAVEDATA_ID = "json_extract(player_data, '$.member.member_savedata_id')"
 FRIEND_CODE = "json_extract(game_sync, '$.friend_code')"
+# footprints and unanswered Dream Pal requests are deleted when they're this old
+EXPIRES_AFTER = timedelta(days=7)
+TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class DBManager(SQLiteStore):
@@ -382,6 +386,14 @@ class DBManager(SQLiteStore):
             row = conn.execute("SELECT visit_count FROM dream_pals WHERE from_gscd = ? AND to_gscd = ? AND status = ?",
                                (gscd, other, DreamPalStatus.PALS)).fetchone()
         return row[0] if row else 0
+
+    def expire_stale(self, now: str) -> None:
+        """Delete the footprints and unanswered Dream Pal requests that are EXPIRES_AFTER old at `now`."""
+        cutoff = (datetime.strptime(now, TIME_FORMAT) - EXPIRES_AFTER).strftime(TIME_FORMAT)
+        with self._conn:
+            self._conn.execute("DELETE FROM footprints WHERE visited_at <= ?", (cutoff,))
+            self._conn.execute("DELETE FROM dream_pals WHERE status != ? AND created_at <= ?",
+                               (DreamPalStatus.PALS, cutoff))
 
     def remove_dream_pal(self, gscd: str, other: str) -> None:
         """Delete everything between `gscd` and `other`, which cancels a request or ends a friendship."""
