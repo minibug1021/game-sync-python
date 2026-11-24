@@ -114,6 +114,16 @@ class DBManager(SQLiteStore):
             {", ".join(_record_column(name) for name in RECORD_COLUMNS)},
             PRIMARY KEY (gscd, uploaded_at)
         )""",
+        # One row per player who visited someone's island.
+        """
+        CREATE TABLE IF NOT EXISTS footprints (
+            island_gscd TEXT NOT NULL,
+            visitor_gscd TEXT NOT NULL,
+            visited_at TEXT NOT NULL,
+            watered INTEGER NOT NULL DEFAULT 0,
+            swapped INTEGER NOT NULL DEFAULT 0,
+            PRIMARY KEY (island_gscd, visitor_gscd)
+        )""",
     )
     COLUMNS = frozenset({"player_data", "sleeping_pokemon", "game_sync", "chest_data"})
     # table -> its id column
@@ -354,6 +364,38 @@ class DBManager(SQLiteStore):
         with self._conn:
             self._conn.execute(
                 "DELETE FROM dream_pals WHERE (from_gscd, to_gscd) IN ((?, ?), (?, ?))", (gscd, other, other, gscd))
+
+    # ------------
+    # footprints
+    # ------------
+
+    def record_footprint(self, island_gscd: str, visitor_gscd: str, now: str) -> None:
+        """Record that `visitor_gscd` is visiting `island_gscd`'s island at `now` (a now_jst_str time)."""
+        with self._conn:
+            self._conn.execute(
+                """INSERT INTO footprints (island_gscd, visitor_gscd, visited_at) VALUES (?, ?, ?)
+                   ON CONFLICT (island_gscd, visitor_gscd) DO UPDATE SET
+                       watered = CASE WHEN substr(visited_at, 1, 10) = substr(excluded.visited_at, 1, 10)
+                                      THEN watered ELSE 0 END,
+                       swapped = CASE WHEN substr(visited_at, 1, 10) = substr(excluded.visited_at, 1, 10)
+                                      THEN swapped ELSE 0 END,
+                       visited_at = excluded.visited_at""",
+                (island_gscd, visitor_gscd, now))
+
+    def mark_footprint(self, island_gscd: str, visitor_gscd: str, action: str, now: str) -> None:
+        """Record that `visitor_gscd` watered (`action` "watered") or swapped ("swapped") on `island_gscd`'s island."""
+        if action not in ("watered", "swapped"):
+            raise ValueError(f"Unknown footprint action {action!r}")
+        self.record_footprint(island_gscd, visitor_gscd, now)
+        with self._conn:
+            self._conn.execute(f"UPDATE footprints SET {action} = 1 WHERE island_gscd = ? AND visitor_gscd = ?",
+                               (island_gscd, visitor_gscd))
+
+    def footprints(self, island_gscd: str) -> list[dict]:
+        """Return the visitors to `island_gscd`'s island."""
+        rows = self._conn.execute(
+            "SELECT * FROM footprints WHERE island_gscd = ? ORDER BY visited_at DESC, visitor_gscd", (island_gscd,))
+        return [dict(row) for row in rows]
 
     # ------------
     # records
