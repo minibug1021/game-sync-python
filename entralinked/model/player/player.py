@@ -39,8 +39,6 @@ def new_player_data(member_id: int) -> dict:
             "bridge_flag":          0,
             "special_disp_flag":    0,
             "member_created_at":    datetime.now().strftime("%Y-%m-%d"),
-            "disclosure_flag":      0,    # privacy settings
-            "list_disclosure_flag": 0,    # privacy settings
             "member_savedata_id":   member_id,
             "gsid":                 None,
             "sleep_time":           0,

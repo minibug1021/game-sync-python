@@ -457,6 +457,11 @@ class DBManager(SQLiteStore):
                 f"INSERT OR REPLACE INTO record_uploads ({', '.join(columns)}) VALUES ({', '.join('?' * len(columns))})",
                 values)
 
+    def set_record_upload_country(self, gscd: str, country: int | None) -> None:
+        """Give a player's uploaded records the country of the account the save was linked to afterwards."""
+        with self._conn:
+            self._conn.execute("UPDATE record_uploads SET country = ? WHERE gscd = ?", (country, gscd))
+
     def read_record_upload(self, gscd: str) -> dict | None:
         """Return the records from a player's last uploaded save, or None if they never uploaded one."""
         row = self._conn.execute("SELECT * FROM record_uploads WHERE gscd = ?", (gscd,)).fetchone()
