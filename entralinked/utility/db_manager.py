@@ -371,6 +371,12 @@ class DBManager(SQLiteStore):
             "SELECT to_gscd FROM dream_pals WHERE from_gscd = ? AND status = ? ORDER BY created_at, to_gscd",
             (gscd, status))]
 
+    def dream_pal_visit_counts(self, gscd: str) -> dict[str, int]:
+        """Return how many days `gscd` has visited each of their Dream Pals."""
+        return dict(self._conn.execute(
+            "SELECT to_gscd, visit_count FROM dream_pals WHERE from_gscd = ? AND status = ?",
+            (gscd, DreamPalStatus.PALS)).fetchall())
+
     def record_dream_pal_visit(self, gscd: str, other: str, today: str) -> int:
         """Count a visit from `gscd` to Dream Pal `other` and return how many days `gscd` has visited.
 
