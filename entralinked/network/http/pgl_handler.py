@@ -122,6 +122,7 @@ def _form_no(pokemon: Pokemon) -> int:
 
 def _store_save(data: bytes, rom_id: int, langcode: int, gscd: str) -> None:
     """Write a save to UPLOADED_SAVES_DIR."""
+    data = data.ljust(SaveFile.FULL_SAVE_SIZE, b"\0")
     language = LANGCODES.get(langcode, str(langcode)).upper()
     name = f"{language}_{ROM_LETTERS.get(rom_id, str(rom_id))}_{gscd}.sav"
     try:

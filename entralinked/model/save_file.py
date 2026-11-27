@@ -527,6 +527,7 @@ class SaveFile:
     MIN_SIZE = 0x24000  # enough to hold every block of a Black / White save
     MAIN_SAVE_SIZE_BW = 0x24000
     MAIN_SAVE_SIZE_B2W2 = 0x26000
+    FULL_SAVE_SIZE = 0x80000  # 512 KiB
     BW_GAME_VERSION_OFFSET = BLOCKS_BW[Block.TRAINER_DATA][0] + 0x1F
 
     def __init__(self, data: bytes) -> None:
@@ -573,7 +574,7 @@ class SaveFile:
 
     @property
     def records(self) -> dict[str, int | None]:
-        """Every value in RECORD_COLUMNS by name. B2W2_RECORDS are None for a Black or White save.
+        """Every value in RECORD_COLUMNS. B2W2_RECORDS are None for a Black or White save.
 
         Raise SaveFileError if the records block doesn't decrypt to a matching checksum.
         """
