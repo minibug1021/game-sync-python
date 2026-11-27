@@ -60,7 +60,7 @@ def build_parser() -> argparse.ArgumentParser:
                              "when a web server on this machine passes port 80 on to this one")
     parser.add_argument("--copy-saves", action="store_true",
                         help='copy each uploaded save to the saves folder and add the copies to saves.zpaq '
-                             'once an hour.')
+                             'every 30 seconds.')
     return parser
 
 

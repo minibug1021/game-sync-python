@@ -17,7 +17,7 @@ class Configuration:
     clear_player_dream_info_on_wake: bool = True
     # Create a Nintendo WFC account for any unknown user id that tries to log in.
     allow_wfc_registration_through_login: bool = True
-    # Copy each uploaded save to the saves folder and archive the copies once an hour.
+    # Copy each uploaded save to the saves folder and archive the copies every 30 seconds.
     copy_saves: bool = False
 
 

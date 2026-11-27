@@ -21,11 +21,11 @@ from ...model.avenue.avenue_data import AvenueVisitor
 from ...model.pkmn.pkmn_info import PkmnInfo, calculate_is_shiny
 from ...model.player.dream_data import DreamEncounter, DreamItem
 from ...model.player.player import Player
-from ...model.save_file import Pokemon, SaveFile, SaveFileError
+from ...model.save_file import Pokemon, SaveFile, SaveFileError, memory_link_save
 from ...paths import RAW_TEXT_DIR, UPLOADED_SAVES_DIR
 from ...utility import gsid_utility
 from ...utility.db_manager import db
-from ...utility.save_archive import store_save
+from ...utility.save_archive import find_save, store_save
 
 logger = logging.getLogger(__name__)
 
@@ -336,17 +336,18 @@ class PglHandler:
         return PglStatus.OK, data
 
     def handle_memory_link(self, req: PglRequest) -> tuple[PglStatus, bytes]:
-        """Handle `savedata.getbw`.
-
-        Black 2 / White 2 fetches a Black / White save this way.
-        """
+        """Handle `savedata.getbw`, for Memory Link over Wi-Fi."""
         player = self.player_manager.load_player(req.gscd)
 
         if player is None:
             return PglStatus.UNREGISTERED, b""
         if is_b2w2(player.rom_id):
             return PglStatus.B2W2_SAVE, b""
-        return PglStatus.NOTHING_STORED, b""
+        save = find_save(UPLOADED_SAVES_DIR, player.gscd)
+        if save is None:
+            return PglStatus.NOTHING_STORED, b""
+        logger.info("Sending the save of %s for Memory Link", player.gscd)
+        return PglStatus.OK, memory_link_save(save)
 
     # -------------------
     # POST handlers

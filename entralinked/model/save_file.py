@@ -68,6 +68,24 @@ BLOCKS_B2W2 = {
     Block.MEDAL:        (0x25300, 0x0498)
 }
 
+MEMORY_LINK_BLOCKS_BW = (
+    (0x19400, 108),   # player data
+    (0x1F700, 680),   # musical props
+    (0x20100, 1008),  # event data
+    (0x21200, 240),   # misc
+    (0x23B00, 368),   # first HoF Pokémon
+)
+MEMORY_LINK_SIZE_BW = 0x23B00 + 368
+
+
+def memory_link_save(save: bytes) -> bytes:
+    """Return a Black / White save with only the blocks read by Memory Link."""
+    out = bytearray(MEMORY_LINK_SIZE_BW)
+    for offset, length in MEMORY_LINK_BLOCKS_BW:
+        out[offset:offset + length] = save[offset:offset + length]
+    return bytes(out)
+
+
 # Ids below FIRST_SMALL_RECORD are 4-byte counters.
 FIRST_SMALL_RECORD = 71
 RECORDS: dict[str, int] = {
